@@ -51,7 +51,7 @@ class Client(object):
         self.req_counter = 1
         self.seq = "0"
         self.payloadDefault = {}
-        self.client = 'mercury'
+        self.client = "mercury"
         self.default_thread_id = None
         self.default_thread_type = None
         self.req_url = ReqUrl()
@@ -60,11 +60,11 @@ class Client(object):
             user_agent = choice(USER_AGENTS)
 
         self._header = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': self.req_url.BASE,
-            'Origin': self.req_url.BASE,
-            'User-Agent': user_agent,
-            'Connection': 'keep-alive',
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": self.req_url.BASE,
+            "Origin": self.req_url.BASE,
+            "User-Agent": user_agent,
+            "Connection": "keep-alive",
         }
 
         handler.setLevel(logging_level)
@@ -87,8 +87,8 @@ class Client(object):
         payload = self.payloadDefault.copy()
         if query:
             payload.update(query)
-        payload['__req'] = str_base(self.req_counter, 36)
-        payload['seq'] = self.seq
+        payload["__req"] = str_base(self.req_counter, 36)
+        payload["seq"] = self.seq
         self.req_counter += 1
         return payload
 
@@ -98,8 +98,8 @@ class Client(object):
         This error usually happens after 1-2 days of inactivity
         It may be a bad idea to do this in an exception handler, if you have a better method, please suggest it!
         """
-        if error_code == '1357004':
-            log.warning('Got error #1357004. Doing a _postLogin, and resending request')
+        if error_code == "1357004":
+            log.warning("Got error #1357004. Doing a _postLogin, and resending request")
             self._postLogin()
             return True
         return False
@@ -147,7 +147,7 @@ class Client(object):
     def _postFile(self, url, files=None, query=None, timeout=30, fix_request=False, as_json=False, error_retries=3):
         payload = self._generatePayload(query)
         # Removes 'Content-Type' from the header
-        headers = dict((i, self._header[i]) for i in self._header if i != 'Content-Type')
+        headers = dict((i, self._header[i]) for i in self._header if i != "Content-Type")
         r = self._session.post(url, headers=headers, data=payload, timeout=timeout, files=files, verify=self.ssl_verify)
         if not fix_request:
             return r
@@ -166,7 +166,7 @@ class Client(object):
         :raises: FBchatException if request failed
         """
 
-        return tuple(self._graphql({'method': 'GET', 'response_format': 'json', 'queries': graphql_queries_to_json(*queries)}))
+        return tuple(self._graphql({"method": "GET", "response_format": "json", "queries": graphql_queries_to_json(*queries)}))
 
     def graphql_request(self, query):
         """
@@ -195,46 +195,46 @@ class Client(object):
         self.payloadDefault = {}
         self.client_id = hex(int(random() * 2147483648))[2:]
         self.start_time = now()
-        self.uid = self._session.cookies.get_dict().get('c_user')
+        self.uid = self._session.cookies.get_dict().get("c_user")
         if self.uid is None:
-            raise FBchatException('Could not find c_user cookie')
+            raise FBchatException("Could not find c_user cookie")
         self.uid = str(self.uid)
         self.user_channel = "p_" + self.uid
-        self.ttstamp = ''
+        self.ttstamp = ""
 
         r = self._get(self.req_url.BASE)
         soup = bs(r.text, "lxml")
 
-        fb_dtsg_element = soup.find("input", {'name': 'fb_dtsg'})
+        fb_dtsg_element = soup.find("input", {"name": "fb_dtsg"})
         if fb_dtsg_element:
-            self.fb_dtsg = fb_dtsg_element['value']
+            self.fb_dtsg = fb_dtsg_element["value"]
         else:
             self.fb_dtsg = re.search(r'name="fb_dtsg" value="(.*?)"', r.text).group(1)
 
-        fb_h_element = soup.find("input", {'name': 'h'})
+        fb_h_element = soup.find("input", {"name": "h"})
         if fb_h_element:
-            self.fb_h = fb_h_element['value']
+            self.fb_h = fb_h_element["value"]
 
         for i in self.fb_dtsg:
             self.ttstamp += str(ord(i))
-        self.ttstamp += '2'
+        self.ttstamp += "2"
         # Set default payload
-        self.payloadDefault['__rev'] = int(r.text.split('"client_revision":', 1)[1].split(",", 1)[0])
-        self.payloadDefault['__user'] = self.uid
-        self.payloadDefault['__a'] = '1'
-        self.payloadDefault['ttstamp'] = self.ttstamp
-        self.payloadDefault['fb_dtsg'] = self.fb_dtsg
+        self.payloadDefault["__rev"] = int(r.text.split('"client_revision":', 1)[1].split(",", 1)[0])
+        self.payloadDefault["__user"] = self.uid
+        self.payloadDefault["__a"] = "1"
+        self.payloadDefault["ttstamp"] = self.ttstamp
+        self.payloadDefault["fb_dtsg"] = self.fb_dtsg
 
         self.form = {
-            'channel': self.user_channel,
-            'partition': '-2',
-            'clientid': self.client_id,
-            'viewer_uid': self.uid,
-            'uid': self.uid,
-            'state': 'active',
-            'format': 'json',
-            'idle': 0,
-            'cap': '8',
+            "channel": self.user_channel,
+            "partition": "-2",
+            "clientid": self.client_id,
+            "viewer_uid": self.uid,
+            "uid": self.uid,
+            "state": "active",
+            "format": "json",
+            "idle": 0,
+            "cap": "8",
         }
 
         self.prev = now()
@@ -246,22 +246,22 @@ class Client(object):
             raise FBchatUserError("Email and password not found.")
 
         soup = bs(self._get(self.req_url.MOBILE).text, "lxml")
-        data = dict((elem['name'], elem['value']) for elem in soup.findAll("input") if elem.has_attr('value') and elem.has_attr('name'))
-        data['email'] = self.email
-        data['pass'] = self.password
-        data['login'] = 'Log In'
+        data = dict((elem["name"], elem["value"]) for elem in soup.findAll("input") if elem.has_attr("value") and elem.has_attr("name"))
+        data["email"] = self.email
+        data["pass"] = self.password
+        data["login"] = "Log In"
 
         r = self._cleanPost(self.req_url.LOGIN, data)
 
         # Usually, 'Checkpoint' will refer to 2FA
-        if 'checkpoint' in r.url and ('enter security code to continue' in r.text.lower() or 'enter login code to continue' in r.text.lower()):
+        if "checkpoint" in r.url and ("enter security code to continue" in r.text.lower() or "enter login code to continue" in r.text.lower()):
             r = self._2FA(r)
 
         # Sometimes Facebook tries to show the user a "Save Device" dialog
-        if 'save-device' in r.url:
+        if "save-device" in r.url:
             r = self._cleanGet(self.req_url.SAVE_DEVICE)
 
-        if 'home' in r.url:
+        if "home" in r.url:
             self._postLogin()
             return True, r.url
         else:
@@ -273,49 +273,49 @@ class Client(object):
 
         s = self.on2FACode()
 
-        data['approvals_code'] = s
-        data['fb_dtsg'] = soup.find("input", {'name': 'fb_dtsg'})['value']
-        data['nh'] = soup.find("input", {'name': 'nh'})['value']
-        data['submit[Submit Code]'] = 'Submit Code'
-        data['codes_submitted'] = 0
-        log.info('Submitting 2FA code.')
+        data["approvals_code"] = s
+        data["fb_dtsg"] = soup.find("input", {"name": "fb_dtsg"})["value"]
+        data["nh"] = soup.find("input", {"name": "nh"})["value"]
+        data["submit[Submit Code]"] = "Submit Code"
+        data["codes_submitted"] = 0
+        log.info("Submitting 2FA code.")
 
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
-        if 'home' in r.url:
+        if "home" in r.url:
             return r
 
-        del (data['approvals_code'])
-        del (data['submit[Submit Code]'])
-        del (data['codes_submitted'])
+        del (data["approvals_code"])
+        del (data["submit[Submit Code]"])
+        del (data["codes_submitted"])
 
-        data['name_action_selected'] = 'save_device'
-        data['submit[Continue]'] = 'Continue'
-        log.info('Saving browser.')  # At this stage, we have dtsg, nh, name_action_selected, submit[Continue]
+        data["name_action_selected"] = "save_device"
+        data["submit[Continue]"] = "Continue"
+        log.info("Saving browser.")  # At this stage, we have dtsg, nh, name_action_selected, submit[Continue]
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
-        if 'home' in r.url:
+        if "home" in r.url:
             return r
 
-        del (data['name_action_selected'])
-        log.info('Starting Facebook checkup flow.')  # At this stage, we have dtsg, nh, submit[Continue]
+        del (data["name_action_selected"])
+        log.info("Starting Facebook checkup flow.")  # At this stage, we have dtsg, nh, submit[Continue]
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
-        if 'home' in r.url:
+        if "home" in r.url:
             return r
 
-        del (data['submit[Continue]'])
-        data['submit[This was me]'] = 'This Was Me'
-        log.info('Verifying login attempt.')  # At this stage, we have dtsg, nh, submit[This was me]
+        del (data["submit[Continue]"])
+        data["submit[This was me]"] = "This Was Me"
+        log.info("Verifying login attempt.")  # At this stage, we have dtsg, nh, submit[This was me]
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
-        if 'home' in r.url:
+        if "home" in r.url:
             return r
 
-        del (data['submit[This was me]'])
-        data['submit[Continue]'] = 'Continue'
-        data['name_action_selected'] = 'save_device'
-        log.info('Saving device again.')  # At this stage, we have dtsg, nh, submit[Continue], name_action_selected
+        del (data["submit[This was me]"])
+        data["submit[Continue]"] = "Continue"
+        data["name_action_selected"] = "save_device"
+        log.info("Saving device again.")  # At this stage, we have dtsg, nh, submit[Continue], name_action_selected
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
         return r
 
@@ -328,7 +328,7 @@ class Client(object):
         """
         # Send a request to the login url, to see if we're directed to the home page
         r = self._cleanGet(self.req_url.LOGIN, allow_redirects=False)
-        return 'Location' in r.headers and 'home' in r.headers['Location']
+        return "Location" in r.headers and "home" in r.headers["Location"]
 
     def getSession(self):
         """Retrieves session cookies
@@ -348,7 +348,7 @@ class Client(object):
         """
 
         # Quick check to see if session_cookies is formatted properly
-        if not session_cookies or 'c_user' not in session_cookies:
+        if not session_cookies or "c_user" not in session_cookies:
             return False
 
         try:
@@ -356,7 +356,7 @@ class Client(object):
             self._session.cookies = requests.cookies.merge_cookies(self._session.cookies, session_cookies)
             self._postLogin()
         except Exception as e:
-            log.exception('Failed loading session')
+            log.exception("Failed loading session")
             self._resetValues()
             return False
         return True
@@ -374,10 +374,10 @@ class Client(object):
         self.onLoggingIn(email=email)
 
         if max_tries < 1:
-            raise FBchatUserError('Cannot login: max_tries should be at least one')
+            raise FBchatUserError("Cannot login: max_tries should be at least one")
 
         if not (email and password):
-            raise FBchatUserError('Email and password not set')
+            raise FBchatUserError("Email and password not set")
 
         self.email = email
         self.password = password
@@ -385,14 +385,14 @@ class Client(object):
         for i in range(1, max_tries + 1):
             login_successful, login_url = self._login()
             if not login_successful:
-                log.warning('Attempt #{} failed{}'.format(i, {True: ', retrying'}.get(i < max_tries, '')))
+                log.warning("Attempt #{} failed{}".format(i, {True: ", retrying"}.get(i < max_tries, "")))
                 time.sleep(1)
                 continue
             else:
                 self.onLoggedIn(email=email)
                 break
         else:
-            raise FBchatUserError('Login failed. Check email/password. (Failed on url: {})'.format(login_url))
+            raise FBchatUserError("Login failed. Check email/password. (Failed on url: {})".format(login_url))
 
     def logout(self):
         """
@@ -403,11 +403,11 @@ class Client(object):
         :rtype: bool
         """
 
-        if not hasattr(self, 'fb_h'):
-            h_r = self._post(self.req_url.MODERN_SETTINGS_MENU, {'pmid': '4'})
+        if not hasattr(self, "fb_h"):
+            h_r = self._post(self.req_url.MODERN_SETTINGS_MENU, {"pmid": "4"})
             self.fb_h = re.search(r'name=\\"h\\" value=\\"(.*?)\\"', h_r.text).group(1)
 
-        data = {'ref': "mb", 'h': self.fb_h}
+        data = {"ref": "mb", "h": self.fb_h}
 
         r = self._get(self.req_url.LOGOUT, data)
 
@@ -435,7 +435,7 @@ class Client(object):
             if self.default_thread_id is not None:
                 return self.default_thread_id, self.default_thread_type
             else:
-                raise ValueError('Thread ID is not set')
+                raise ValueError("Thread ID is not set")
         else:
             return given_thread_id, given_thread_type
 
@@ -470,28 +470,28 @@ class Client(object):
         :raises: FBchatException if request failed
         """
 
-        data = {'viewer': self.uid}
+        data = {"viewer": self.uid}
         j = self._post(self.req_url.ALL_USERS, query=data, fix_request=True, as_json=True)
-        if j.get('payload') is None:
-            raise FBchatException('Missing payload while fetching users: {}'.format(j))
+        if j.get("payload") is None:
+            raise FBchatException("Missing payload while fetching users: {}".format(j))
 
         users = []
 
-        for key in j['payload']:
-            k = j['payload'][key]
-            if k['type'] in ['user', 'friend']:
-                if k['id'] in ['0', 0]:
+        for key in j["payload"]:
+            k = j["payload"][key]
+            if k["type"] in ["user", "friend"]:
+                if k["id"] in ["0", 0]:
                     # Skip invalid users
                     pass
                 users.append(
                     User(
-                        k['id'],
-                        first_name=k.get('firstName'),
-                        url=k.get('uri'),
-                        photo=k.get('thumbSrc'),
-                        name=k.get('name'),
-                        is_friend=k.get('is_friend'),
-                        gender=GENDERS.get(k.get('gender')),
+                        k["id"],
+                        first_name=k.get("firstName"),
+                        url=k.get("uri"),
+                        photo=k.get("thumbSrc"),
+                        name=k.get("name"),
+                        is_friend=k.get("is_friend"),
+                        gender=GENDERS.get(k.get("gender")),
                     )
                 )
 
@@ -508,9 +508,9 @@ class Client(object):
         :raises: FBchatException if request failed
         """
 
-        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_USER, params={'search': name, 'limit': limit}))
+        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_USER, params={"search": name, "limit": limit}))
 
-        return [graphql_to_user(node) for node in j[name]['users']['nodes']]
+        return [graphql_to_user(node) for node in j[name]["users"]["nodes"]]
 
     def searchForPages(self, name, limit=1):
         """
@@ -522,9 +522,9 @@ class Client(object):
         :raises: FBchatException if request failed
         """
 
-        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_PAGE, params={'search': name, 'limit': limit}))
+        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_PAGE, params={"search": name, "limit": limit}))
 
-        return [graphql_to_page(node) for node in j[name]['pages']['nodes']]
+        return [graphql_to_page(node) for node in j[name]["pages"]["nodes"]]
 
     # TODO intergrate Rooms
     def searchForGroups(self, name, limit=1):
@@ -538,9 +538,9 @@ class Client(object):
         :raises: FBchatException if request failed
         """
 
-        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_GROUP, params={'search': name, 'limit': limit}))
+        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_GROUP, params={"search": name, "limit": limit}))
 
-        return [graphql_to_group(node) for node in j['viewer']['groups']['nodes']]
+        return [graphql_to_group(node) for node in j["viewer"]["groups"]["nodes"]]
 
     def searchForThreads(self, name, limit=1):
         """
@@ -553,23 +553,23 @@ class Client(object):
         :raises: FBchatException if request failed
         """
 
-        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_THREAD, params={'search': name, 'limit': limit}))
+        j = self.graphql_request(GraphQL(query=GraphQL.SEARCH_THREAD, params={"search": name, "limit": limit}))
 
         rtn = []
-        for node in j[name]['threads']['nodes']:
-            if node['__typename'] == 'User':
+        for node in j[name]["threads"]["nodes"]:
+            if node["__typename"] == "User":
                 rtn.append(graphql_to_user(node))
-            elif node['__typename'] == 'MessageThread':
+            elif node["__typename"] == "MessageThread":
                 # MessageThread => Group thread
                 rtn.append(graphql_to_group(node))
-            elif node['__typename'] == 'Page':
+            elif node["__typename"] == "Page":
                 rtn.append(graphql_to_page(node))
-            elif node['__typename'] == 'Group':
+            elif node["__typename"] == "Group":
                 # We don't handle Facebook "Groups"
                 pass
             # TODO Add Rooms
             else:
-                log.warning('Unknown __typename: {} in {}'.format(repr(node['__typename']), node))
+                log.warning("Unknown __typename: {} in {}".format(repr(node["__typename"]), node))
 
         return rtn
 
@@ -577,27 +577,27 @@ class Client(object):
         data = {"ids[{}]".format(i): _id for i, _id in enumerate(ids)}
         j = self._post(self.req_url.INFO, data, fix_request=True, as_json=True)
 
-        if j.get('payload') is None or j['payload'].get('profiles') is None:
-            raise FBchatException('No users/pages returned: {}'.format(j))
+        if j.get("payload") is None or j["payload"].get("profiles") is None:
+            raise FBchatException("No users/pages returned: {}".format(j))
 
         entries = {}
-        for _id in j['payload']['profiles']:
-            k = j['payload']['profiles'][_id]
-            if k['type'] in ['user', 'friend']:
+        for _id in j["payload"]["profiles"]:
+            k = j["payload"]["profiles"][_id]
+            if k["type"] in ["user", "friend"]:
                 entries[_id] = {
-                    'id': _id,
-                    'type': ThreadType.USER,
-                    'url': k.get('uri'),
-                    'first_name': k.get('firstName'),
-                    'is_viewer_friend': k.get('is_friend'),
-                    'gender': k.get('gender'),
-                    'profile_picture': {'uri': k.get('thumbSrc')},
-                    'name': k.get('name'),
+                    "id": _id,
+                    "type": ThreadType.USER,
+                    "url": k.get("uri"),
+                    "first_name": k.get("firstName"),
+                    "is_viewer_friend": k.get("is_friend"),
+                    "gender": k.get("gender"),
+                    "profile_picture": {"uri": k.get("thumbSrc")},
+                    "name": k.get("name"),
                 }
-            elif k['type'] == 'page':
-                entries[_id] = {'id': _id, 'type': ThreadType.PAGE, 'url': k.get('uri'), 'profile_picture': {'uri': k.get('thumbSrc')}, 'name': k.get('name')}
+            elif k["type"] == "page":
+                entries[_id] = {"id": _id, "type": ThreadType.PAGE, "url": k.get("uri"), "profile_picture": {"uri": k.get("thumbSrc")}, "name": k.get("name")}
             else:
-                raise FBchatException('{} had an unknown thread type: {}'.format(_id, k))
+                raise FBchatException("{} had an unknown thread type: {}".format(_id, k))
 
         log.debug(entries)
         return entries
@@ -621,7 +621,7 @@ class Client(object):
             if threads[k].type == ThreadType.USER:
                 users[k] = threads[k]
             else:
-                raise FBchatUserError('Thread {} was not a user'.format(threads[k]))
+                raise FBchatUserError("Thread {} was not a user".format(threads[k]))
 
         return users
 
@@ -644,7 +644,7 @@ class Client(object):
             if threads[k].type == ThreadType.PAGE:
                 pages[k] = threads[k]
             else:
-                raise FBchatUserError('Thread {} was not a page'.format(threads[k]))
+                raise FBchatUserError("Thread {} was not a page".format(threads[k]))
 
         return pages
 
@@ -664,7 +664,7 @@ class Client(object):
             if threads[k].type == ThreadType.GROUP:
                 groups[k] = threads[k]
             else:
-                raise FBchatUserError('Thread {} was not a group'.format(threads[k]))
+                raise FBchatUserError("Thread {} was not a group".format(threads[k]))
 
         return groups
 
@@ -683,40 +683,40 @@ class Client(object):
 
         queries = []
         for thread_id in thread_ids:
-            queries.append(GraphQL(doc_id='1386147188135407', params={'id': thread_id, 'message_limit': 0, 'load_messages': False, 'load_read_receipts': False, 'before': None}))
+            queries.append(GraphQL(doc_id="1386147188135407", params={"id": thread_id, "message_limit": 0, "load_messages": False, "load_read_receipts": False, "before": None}))
 
         j = self.graphql_requests(*queries)
 
         for i, entry in enumerate(j):
-            if entry.get('message_thread') is None:
+            if entry.get("message_thread") is None:
                 # If you don't have an existing thread with this person, attempt to retrieve user data anyways
-                j[i]['message_thread'] = {'thread_key': {'other_user_id': thread_ids[i]}, 'thread_type': 'ONE_TO_ONE'}
+                j[i]["message_thread"] = {"thread_key": {"other_user_id": thread_ids[i]}, "thread_type": "ONE_TO_ONE"}
 
-        pages_and_user_ids = [k['message_thread']['thread_key']['other_user_id'] for k in j if k['message_thread'].get('thread_type') == 'ONE_TO_ONE']
+        pages_and_user_ids = [k["message_thread"]["thread_key"]["other_user_id"] for k in j if k["message_thread"].get("thread_type") == "ONE_TO_ONE"]
         pages_and_users = {}
         if len(pages_and_user_ids) != 0:
             pages_and_users = self._fetchInfo(*pages_and_user_ids)
 
         rtn = {}
         for i, entry in enumerate(j):
-            entry = entry['message_thread']
-            if entry.get('thread_type') == 'GROUP':
-                _id = entry['thread_key']['thread_fbid']
+            entry = entry["message_thread"]
+            if entry.get("thread_type") == "GROUP":
+                _id = entry["thread_key"]["thread_fbid"]
                 rtn[_id] = graphql_to_group(entry)
-            elif entry.get('thread_type') == 'ROOM':
-                _id = entry['thread_key']['thread_fbid']
+            elif entry.get("thread_type") == "ROOM":
+                _id = entry["thread_key"]["thread_fbid"]
                 rtn[_id] = graphql_to_room(entry)
-            elif entry.get('thread_type') == 'ONE_TO_ONE':
-                _id = entry['thread_key']['other_user_id']
+            elif entry.get("thread_type") == "ONE_TO_ONE":
+                _id = entry["thread_key"]["other_user_id"]
                 if pages_and_users.get(_id) is None:
-                    raise FBchatException('Could not fetch thread {}'.format(_id))
+                    raise FBchatException("Could not fetch thread {}".format(_id))
                 entry.update(pages_and_users[_id])
-                if entry['type'] == ThreadType.USER:
+                if entry["type"] == ThreadType.USER:
                     rtn[_id] = graphql_to_user(entry)
                 else:
                     rtn[_id] = graphql_to_page(entry)
             else:
-                raise FBchatException('{} had an unknown thread type: {}'.format(thread_ids[i], entry))
+                raise FBchatException("{} had an unknown thread type: {}".format(thread_ids[i], entry))
 
         return rtn
 
@@ -737,13 +737,13 @@ class Client(object):
         thread_id, thread_type = self._getThread(thread_id, None)
 
         j = self.graphql_request(
-            GraphQL(doc_id='1386147188135407', params={'id': thread_id, 'message_limit': limit, 'load_messages': True, 'load_read_receipts': False, 'before': before})
+            GraphQL(doc_id="1386147188135407", params={"id": thread_id, "message_limit": limit, "load_messages": True, "load_read_receipts": False, "before": before})
         )
 
-        if j.get('message_thread') is None:
-            raise FBchatException('Could not fetch thread {}: {}'.format(thread_id, j))
+        if j.get("message_thread") is None:
+            raise FBchatException("Could not fetch thread {}: {}".format(thread_id, j))
 
-        return list(reversed([graphql_to_message(message) for message in j['message_thread']['messages']['nodes']]))
+        return list(reversed([graphql_to_message(message) for message in j["message_thread"]["messages"]["nodes"]]))
 
     def fetchThreadList(self, offset=None, limit=20, thread_location=ThreadLocation.INBOX, before=None):
         """Get thread list of your facebook account
@@ -760,10 +760,10 @@ class Client(object):
         """
 
         if offset is not None:
-            log.warning('Using `offset` in `fetchThreadList` is no longer supported, since Facebook migrated to the use of GraphQL in this request. Use `before` instead')
+            log.warning("Using `offset` in `fetchThreadList` is no longer supported, since Facebook migrated to the use of GraphQL in this request. Use `before` instead")
 
         if limit > 20 or limit < 1:
-            raise FBchatUserError('`limit` should be between 1 and 20')
+            raise FBchatUserError("`limit` should be between 1 and 20")
 
         if thread_location in ThreadLocation:
             loc_str = thread_location.value
@@ -771,10 +771,10 @@ class Client(object):
             raise FBchatUserError('"thread_location" must be a value of ThreadLocation')
 
         j = self.graphql_request(
-            GraphQL(doc_id='1349387578499440', params={'limit': limit, 'tags': [loc_str], 'before': before, 'includeDeliveryReceipts': True, 'includeSeqID': False})
+            GraphQL(doc_id="1349387578499440", params={"limit": limit, "tags": [loc_str], "before": before, "includeDeliveryReceipts": True, "includeSeqID": False})
         )
 
-        return [graphql_to_thread(node) for node in j['viewer']['message_threads']['nodes']]
+        return [graphql_to_thread(node) for node in j["viewer"]["message_threads"]["nodes"]]
 
     def fetchUnread(self):
         """
@@ -785,15 +785,15 @@ class Client(object):
         :raises: FBchatException if request failed
         """
         form = {
-            'folders[0]': 'inbox',
-            'client': 'mercury',
-            'last_action_timestamp': now() - 60 * 1000
+            "folders[0]": "inbox",
+            "client": "mercury",
+            "last_action_timestamp": now() - 60 * 1000
             # 'last_action_timestamp': 0
         }
 
         j = self._post(self.req_url.UNREAD_THREADS, form, fix_request=True, as_json=True)
 
-        return j['payload']['unread_thread_fbids'][0]['other_user_fbids']
+        return j["payload"]["unread_thread_fbids"][0]["other_user_fbids"]
 
     def fetchUnseen(self):
         """
@@ -805,7 +805,7 @@ class Client(object):
         """
         j = self._post(self.req_url.UNSEEN_THREADS, None, fix_request=True, as_json=True)
 
-        return j['payload']['unseen_thread_fbids'][0]['other_user_fbids']
+        return j["payload"]["unseen_thread_fbids"][0]["other_user_fbids"]
 
     def fetchImageUrl(self, image_id):
         """Fetches the url to the original image from an image attachment ID
@@ -817,11 +817,11 @@ class Client(object):
         :raises: FBChatException if request failed
         """
         image_id = str(image_id)
-        j = check_request(self._get(ReqUrl.ATTACHMENT_PHOTO, query={'photo_id': str(image_id)}))
+        j = check_request(self._get(ReqUrl.ATTACHMENT_PHOTO, query={"photo_id": str(image_id)}))
 
         url = get_jsmods_require(j, 3)
         if url is None:
-            raise FBChatException('Could not fetch image url from: {}'.format(j))
+            raise FBChatException("Could not fetch image url from: {}".format(j))
         return url
 
     """
@@ -840,45 +840,45 @@ class Client(object):
         messageAndOTID = generateOfflineThreadingID()
         timestamp = now()
         data = {
-            'client': self.client,
-            'author': 'fbid:' + str(self.uid),
-            'timestamp': timestamp,
-            'source': 'source:chat:web',
-            'offline_threading_id': messageAndOTID,
-            'message_id': messageAndOTID,
-            'threading_id': generateMessageID(self.client_id),
-            'ephemeral_ttl_mode:': '0',
+            "client": self.client,
+            "author": "fbid:" + str(self.uid),
+            "timestamp": timestamp,
+            "source": "source:chat:web",
+            "offline_threading_id": messageAndOTID,
+            "message_id": messageAndOTID,
+            "threading_id": generateMessageID(self.client_id),
+            "ephemeral_ttl_mode:": "0",
         }
 
         # Set recipient
         if thread_type in [ThreadType.USER, ThreadType.PAGE]:
-            data['other_user_fbid'] = thread_id
+            data["other_user_fbid"] = thread_id
         elif thread_type == ThreadType.GROUP:
-            data['thread_fbid'] = thread_id
+            data["thread_fbid"] = thread_id
 
         if message is None:
             message = Message()
 
         if message.text or message.sticker or message.emoji_size:
-            data['action_type'] = 'ma-type:user-generated-message'
+            data["action_type"] = "ma-type:user-generated-message"
 
         if message.text:
-            data['body'] = message.text
+            data["body"] = message.text
 
         for i, mention in enumerate(message.mentions):
-            data['profile_xmd[{}][id]'.format(i)] = mention.thread_id
-            data['profile_xmd[{}][offset]'.format(i)] = mention.offset
-            data['profile_xmd[{}][length]'.format(i)] = mention.length
-            data['profile_xmd[{}][type]'.format(i)] = 'p'
+            data["profile_xmd[{}][id]".format(i)] = mention.thread_id
+            data["profile_xmd[{}][offset]".format(i)] = mention.offset
+            data["profile_xmd[{}][length]".format(i)] = mention.length
+            data["profile_xmd[{}][type]".format(i)] = "p"
 
         if message.emoji_size:
             if message.text:
-                data['tags[0]'] = 'hot_emoji_size:' + message.emoji_size.name.lower()
+                data["tags[0]"] = "hot_emoji_size:" + message.emoji_size.name.lower()
             else:
-                data['sticker_id'] = message.emoji_size.value
+                data["sticker_id"] = message.emoji_size.value
 
         if message.sticker:
-            data['sticker_id'] = message.sticker.uid
+            data["sticker_id"] = message.sticker.uid
 
         return data
 
@@ -887,17 +887,17 @@ class Client(object):
         j = self._post(self.req_url.SEND, data, fix_request=True, as_json=True)
 
         try:
-            message_ids = [action['message_id'] for action in j['payload']['actions'] if 'message_id' in action]
+            message_ids = [action["message_id"] for action in j["payload"]["actions"] if "message_id" in action]
             if len(message_ids) != 1:
                 log.warning("Got multiple message ids' back: {}".format(message_ids))
             message_id = message_ids[0]
         except (KeyError, IndexError) as e:
-            raise FBchatException('Error when sending message: No message IDs could be found: {}'.format(j))
+            raise FBchatException("Error when sending message: No message IDs could be found: {}".format(j))
 
         # update JS token if received in response
         fb_dtsg = get_jsmods_require(j, 2)
         if fb_dtsg is not None:
-            self.payloadDefault['fb_dtsg'] = fb_dtsg
+            self.payloadDefault["fb_dtsg"] = fb_dtsg
 
         return message_id
 
@@ -933,12 +933,12 @@ class Client(object):
     def _uploadImage(self, image_path, data, mimetype):
         """Upload an image and get the image_id for sending in a message"""
 
-        j = self._postFile(self.req_url.UPLOAD, {'file': (image_path, data, mimetype)}, fix_request=True, as_json=True)
+        j = self._postFile(self.req_url.UPLOAD, {"file": (image_path, data, mimetype)}, fix_request=True, as_json=True)
         # Return the image_id
-        if not mimetype == 'image/gif':
-            return j['payload']['metadata'][0]['image_id']
+        if not mimetype == "image/gif":
+            return j["payload"]["metadata"][0]["image_id"]
         else:
-            return j['payload']['metadata'][0]['gif_id']
+            return j["payload"]["metadata"][0]["gif_id"]
 
     def sendImage(self, image_id, message=None, thread_id=None, thread_type=ThreadType.USER, is_gif=False):
         """
@@ -947,13 +947,13 @@ class Client(object):
         thread_id, thread_type = self._getThread(thread_id, thread_type)
         data = self._getSendData(message=self._oldMessage(message), thread_id=thread_id, thread_type=thread_type)
 
-        data['action_type'] = 'ma-type:user-generated-message'
-        data['has_attachment'] = True
+        data["action_type"] = "ma-type:user-generated-message"
+        data["has_attachment"] = True
 
         if not is_gif:
-            data['image_ids[0]'] = image_id
+            data["image_ids[0]"] = image_id
         else:
-            data['gif_ids[0]'] = image_id
+            data["gif_ids[0]"] = image_id
 
         return self._doSendRequest(data)
 
@@ -971,7 +971,7 @@ class Client(object):
         """
         thread_id, thread_type = self._getThread(thread_id, thread_type)
         mimetype = guess_type(image_url)[0]
-        is_gif = mimetype == 'image/gif'
+        is_gif = mimetype == "image/gif"
         remote_image = requests.get(image_url).content
         image_id = self._uploadImage(image_url, remote_image, mimetype)
         return self.sendImage(image_id=image_id, message=message, thread_id=thread_id, thread_type=thread_type, is_gif=is_gif)
@@ -990,8 +990,8 @@ class Client(object):
         """
         thread_id, thread_type = self._getThread(thread_id, thread_type)
         mimetype = guess_type(image_path)[0]
-        is_gif = mimetype == 'image/gif'
-        image_id = self._uploadImage(image_path, open(image_path, 'rb'), mimetype)
+        is_gif = mimetype == "image/gif"
+        image_id = self._uploadImage(image_path, open(image_path, "rb"), mimetype)
         return self.sendImage(image_id=image_id, message=message, thread_id=thread_id, thread_type=thread_type, is_gif=is_gif)
 
     def addUsersToGroup(self, user_ids, thread_id=None):
@@ -1006,8 +1006,8 @@ class Client(object):
         thread_id, thread_type = self._getThread(thread_id, None)
         data = self._getSendData(thread_id=thread_id, thread_type=ThreadType.GROUP)
 
-        data['action_type'] = 'ma-type:log-message'
-        data['log_message_type'] = 'log:subscribe'
+        data["action_type"] = "ma-type:log-message"
+        data["log_message_type"] = "log:subscribe"
 
         if type(user_ids) is not list:
             user_ids = [user_ids]
@@ -1017,9 +1017,9 @@ class Client(object):
 
         for i, user_id in enumerate(user_ids):
             if user_id == self.uid:
-                raise FBchatUserError('Error when adding users: Cannot add self to group thread')
+                raise FBchatUserError("Error when adding users: Cannot add self to group thread")
             else:
-                data['log_message_data[added_participants][' + str(i) + ']'] = "fbid:" + str(user_id)
+                data["log_message_data[added_participants][" + str(i) + "]"] = "fbid:" + str(user_id)
 
         return self._doSendRequest(data)
 
@@ -1058,9 +1058,9 @@ class Client(object):
         else:
             data = self._getSendData(thread_id=thread_id, thread_type=thread_type)
 
-            data['action_type'] = 'ma-type:log-message'
-            data['log_message_data[name]'] = title
-            data['log_message_type'] = 'log:thread-name'
+            data["action_type"] = "ma-type:log-message"
+            data["log_message_data[name]"] = title
+            data["log_message_type"] = "log:thread-name"
 
             return self._doSendRequest(data)
 
@@ -1077,7 +1077,7 @@ class Client(object):
         """
         thread_id, thread_type = self._getThread(thread_id, thread_type)
 
-        data = {'nickname': nickname, 'participant_id': user_id, 'thread_or_other_fbid': thread_id}
+        data = {"nickname": nickname, "participant_id": user_id, "thread_or_other_fbid": thread_id}
 
         j = self._post(self.req_url.THREAD_NICKNAME, data, fix_request=True, as_json=True)
 
@@ -1092,7 +1092,7 @@ class Client(object):
         """
         thread_id, thread_type = self._getThread(thread_id, None)
 
-        data = {'color_choice': color.value if color != ThreadColor.MESSENGER_BLUE else '', 'thread_or_other_fbid': thread_id}
+        data = {"color_choice": color.value if color != ThreadColor.MESSENGER_BLUE else "", "thread_or_other_fbid": thread_id}
 
         j = self._post(self.req_url.THREAD_COLOR, data, fix_request=True, as_json=True)
 
@@ -1108,7 +1108,7 @@ class Client(object):
         """
         thread_id, thread_type = self._getThread(thread_id, None)
 
-        data = {'emoji_choice': emoji, 'thread_or_other_fbid': thread_id}
+        data = {"emoji_choice": emoji, "thread_or_other_fbid": thread_id}
 
         j = self._post(self.req_url.THREAD_EMOJI, data, fix_request=True, as_json=True)
 
@@ -1130,11 +1130,11 @@ class Client(object):
             url_part = urllib.parse.urlencode(full_data)
         except AttributeError:
             # This is a very hacky solution for python 2 support, please suggest a better one ;)
-            url_part = urllib.urlencode(full_data).replace('u%27', '%27').replace('%5CU{}'.format(MessageReactionFix[reaction.value][0]), MessageReactionFix[reaction.value][1])
+            url_part = urllib.urlencode(full_data).replace("u%27", "%27").replace("%5CU{}".format(MessageReactionFix[reaction.value][0]), MessageReactionFix[reaction.value][1])
 
-        j = self._post('{}/?{}'.format(self.req_url.MESSAGE_REACTION, url_part), fix_request=True, as_json=True)
+        j = self._post("{}/?{}".format(self.req_url.MESSAGE_REACTION, url_part), fix_request=True, as_json=True)
 
-    def eventReminder(self, thread_id, time, title, location='', location_id=''):
+    def eventReminder(self, thread_id, time, title, location="", location_id=""):
         """
         Sets an event reminder
 
@@ -1163,7 +1163,7 @@ class Client(object):
         }
         url_part = urllib.parse.urlencode(full_data)
 
-        j = self._post('{}/?{}'.format(self.req_url.EVENT_REMINDER, url_part), fix_request=True, as_json=True)
+        j = self._post("{}/?{}".format(self.req_url.EVENT_REMINDER, url_part), fix_request=True, as_json=True)
 
     def setTypingStatus(self, status, thread_id=None, thread_type=None):
         """
@@ -1209,7 +1209,7 @@ class Client(object):
         :return: Whether the request was successful
         :raises: FBchatException if request failed
         """
-        data = {"ids[%s]" % thread_id: 'true', "watermarkTimestamp": now(), "shouldSendReadReceipt": 'true'}
+        data = {"ids[%s]" % thread_id: "true", "watermarkTimestamp": now(), "shouldSendReadReceipt": "true"}
 
         r = self._post(self.req_url.READ_STATUS, data)
         return r.ok
@@ -1238,15 +1238,15 @@ class Client(object):
 
     def _ping(self, sticky, pool):
         data = {
-            'channel': self.user_channel,
-            'clientid': self.client_id,
-            'partition': -2,
-            'cap': 0,
-            'uid': self.uid,
-            'sticky_token': sticky,
-            'sticky_pool': pool,
-            'viewer_uid': self.uid,
-            'state': 'active',
+            "channel": self.user_channel,
+            "clientid": self.client_id,
+            "partition": -2,
+            "cap": 0,
+            "uid": self.uid,
+            "sticky_token": sticky,
+            "sticky_pool": pool,
+            "viewer_uid": self.uid,
+            "state": "active",
         }
         self._get(self.req_url.PING, data, fix_request=True, as_json=False)
 
@@ -1257,10 +1257,10 @@ class Client(object):
 
         j = self._get(self.req_url.STICKY, data, fix_request=True, as_json=True)
 
-        if j.get('lb_info') is None:
-            raise FBchatException('Missing lb_info: {}'.format(j))
+        if j.get("lb_info") is None:
+            raise FBchatException("Missing lb_info: {}".format(j))
 
-        return j['lb_info']['sticky'], j['lb_info']['pool']
+        return j["lb_info"]["sticky"], j["lb_info"]["pool"]
 
     def _pullMessage(self, sticky, pool):
         """Call pull api with seq value to get message data."""
@@ -1269,13 +1269,13 @@ class Client(object):
 
         j = self._get(ReqUrl.STICKY, data, fix_request=True, as_json=True)
 
-        self.seq = j.get('seq', '0')
+        self.seq = j.get("seq", "0")
         return j
 
     def _parseMessage(self, content):
         """Get message and author name from content. May contain multiple messages in the content."""
 
-        if 'ms' not in content:
+        if "ms" not in content:
             return
 
         for m in content["ms"]:
@@ -1288,11 +1288,11 @@ class Client(object):
                         """Returns a tuple consisting of thread ID and thread type"""
                         id_thread = None
                         type_thread = None
-                        if 'threadFbId' in msg_metadata['threadKey']:
-                            id_thread = str(msg_metadata['threadKey']['threadFbId'])
+                        if "threadFbId" in msg_metadata["threadKey"]:
+                            id_thread = str(msg_metadata["threadKey"]["threadFbId"])
                             type_thread = ThreadType.GROUP
-                        elif 'otherUserFbId' in msg_metadata['threadKey']:
-                            id_thread = str(msg_metadata['threadKey']['otherUserFbId'])
+                        elif "otherUserFbId" in msg_metadata["threadKey"]:
+                            id_thread = str(msg_metadata["threadKey"]["otherUserFbId"])
                             type_thread = ThreadType.USER
                         return id_thread, type_thread
 
@@ -1302,19 +1302,19 @@ class Client(object):
 
                     if metadata:
                         mid = metadata["messageId"]
-                        author_id = str(metadata['actorFbId'])
+                        author_id = str(metadata["actorFbId"])
                         ts = int(metadata.get("timestamp"))
 
                     # Added participants
-                    if 'addedParticipants' in delta:
-                        added_ids = [str(x['userFbId']) for x in delta['addedParticipants']]
-                        thread_id = str(metadata['threadKey']['threadFbId'])
+                    if "addedParticipants" in delta:
+                        added_ids = [str(x["userFbId"]) for x in delta["addedParticipants"]]
+                        thread_id = str(metadata["threadKey"]["threadFbId"])
                         self.onPeopleAdded(mid=mid, added_ids=added_ids, author_id=author_id, thread_id=thread_id, ts=ts, msg=m)
 
                     # Left/removed participants
-                    elif 'leftParticipantFbId' in delta:
-                        removed_id = str(delta['leftParticipantFbId'])
-                        thread_id = str(metadata['threadKey']['threadFbId'])
+                    elif "leftParticipantFbId" in delta:
+                        removed_id = str(delta["leftParticipantFbId"])
+                        thread_id = str(metadata["threadKey"]["threadFbId"])
                         self.onPersonRemoved(mid=mid, removed_id=removed_id, author_id=author_id, thread_id=thread_id, ts=ts, msg=m)
 
                     # Color change
@@ -1383,39 +1383,39 @@ class Client(object):
                     # New message
                     elif delta.get("class") == "NewMessage":
                         mentions = []
-                        if delta.get('data') and delta['data'].get('prng'):
+                        if delta.get("data") and delta["data"].get("prng"):
                             try:
-                                mentions = [Mention(str(mention.get('i')), offset=mention.get('o'), length=mention.get('l')) for mention in parse_json(delta['data']['prng'])]
+                                mentions = [Mention(str(mention.get("i")), offset=mention.get("o"), length=mention.get("l")) for mention in parse_json(delta["data"]["prng"])]
                             except Exception:
-                                log.exception('An exception occured while reading attachments')
+                                log.exception("An exception occured while reading attachments")
 
                         sticker = None
                         attachments = []
-                        if delta.get('attachments'):
+                        if delta.get("attachments"):
                             try:
-                                for a in delta['attachments']:
-                                    mercury = a['mercury']
-                                    if mercury.get('blob_attachment'):
-                                        image_metadata = a.get('imageMetadata', {})
-                                        attach_type = mercury['blob_attachment']['__typename']
-                                        attachment = graphql_to_attachment(mercury.get('blob_attachment', {}))
+                                for a in delta["attachments"]:
+                                    mercury = a["mercury"]
+                                    if mercury.get("blob_attachment"):
+                                        image_metadata = a.get("imageMetadata", {})
+                                        attach_type = mercury["blob_attachment"]["__typename"]
+                                        attachment = graphql_to_attachment(mercury.get("blob_attachment", {}))
 
-                                        if attach_type == ['MessageFile', 'MessageVideo', 'MessageAudio']:
+                                        if attach_type == ["MessageFile", "MessageVideo", "MessageAudio"]:
                                             # TODO: Add more data here for audio files
-                                            attachment.size = int(a['fileSize'])
+                                            attachment.size = int(a["fileSize"])
                                         attachments.append(attachment)
-                                    elif mercury.get('sticker_attachment'):
-                                        sticker = graphql_to_sticker(a['mercury']['sticker_attachment'])
-                                    elif mercury.get('extensible_attachment'):
+                                    elif mercury.get("sticker_attachment"):
+                                        sticker = graphql_to_sticker(a["mercury"]["sticker_attachment"])
+                                    elif mercury.get("extensible_attachment"):
                                         # TODO: Add more data here for shared stuff (URLs, events and so on)
                                         pass
                             except Exception:
-                                log.exception('An exception occured while reading attachments: {}'.format(delta['attachments']))
+                                log.exception("An exception occured while reading attachments: {}".format(delta["attachments"]))
 
-                        if metadata and metadata.get('tags'):
-                            emoji_size = get_emojisize_from_tags(metadata.get('tags'))
+                        if metadata and metadata.get("tags"):
+                            emoji_size = get_emojisize_from_tags(metadata.get("tags"))
 
-                        message = Message(text=delta.get('body'), mentions=mentions, emoji_size=emoji_size, sticker=sticker, attachments=attachments)
+                        message = Message(text=delta.get("body"), mentions=mentions, emoji_size=emoji_size, sticker=sticker, attachments=attachments)
                         message.uid = mid
                         message.author = author_id
                         message.timestamp = ts
@@ -1424,7 +1424,7 @@ class Client(object):
                         self.onMessage(
                             mid=mid,
                             author_id=author_id,
-                            message=delta.get('body', ''),
+                            message=delta.get("body", ""),
                             message_object=message,
                             thread_id=thread_id,
                             thread_type=thread_type,
@@ -1464,8 +1464,8 @@ class Client(object):
                 #
                 #     self.onSeen(m.get('realtime_viewer_fbid'), m.get('reader'), m.get('time'))
 
-                elif mtype in ['jewel_requests_add']:
-                    from_id = m['from']
+                elif mtype in ["jewel_requests_add"]:
+                    from_id = m["from"]
                     self.onFriendRequest(from_id=from_id, msg=m)
 
                 # Happens on every login
@@ -1479,9 +1479,9 @@ class Client(object):
                 # Chat timestamp
                 elif mtype == "chatproxy-presence":
                     buddylist = {}
-                    for _id in m.get('buddyList', {}):
-                        payload = m['buddyList'][_id]
-                        buddylist[_id] = payload.get('lat')
+                    for _id in m.get("buddyList", {}):
+                        payload = m["buddyList"][_id]
+                        buddylist[_id] = payload.get("lat")
                     self.onChatTimestamp(buddylist=buddylist, msg=m)
 
                 # Unknown message type
@@ -1573,7 +1573,7 @@ class Client(object):
 
     def on2FACode(self):
         """Called when a 2FA code is needed to progress"""
-        return input('Please enter your 2FA code --> ')
+        return input("Please enter your 2FA code --> ")
 
     def onLoggedIn(self, email=None):
         """
@@ -1594,7 +1594,7 @@ class Client(object):
         :param exception: The exception that was encountered
         :return: Whether the loop should keep running
         """
-        log.exception('Got exception while listening')
+        log.exception("Got exception while listening")
         return True
 
     def onMessage(self, mid=None, author_id=None, message=None, message_object=None, thread_id=None, thread_type=ThreadType.USER, ts=None, metadata=None, msg=None):
@@ -1736,7 +1736,7 @@ class Client(object):
         :param ts: A timestamp of the action
         :param msg: A full set of the data recieved
         """
-        log.info("{} added: {}".format(author_id, ', '.join(added_ids)))
+        log.info("{} added: {}".format(author_id, ", ".join(added_ids)))
 
     def onPersonRemoved(self, mid=None, removed_id=None, author_id=None, thread_id=None, ts=None, msg=None):
         """
@@ -1770,7 +1770,7 @@ class Client(object):
         :param recent_unread: --
         :param msg: A full set of the data recieved
         """
-        log.info('Inbox event: {}, {}, {}'.format(unseen, unread, recent_unread))
+        log.info("Inbox event: {}, {}, {}".format(unseen, unread, recent_unread))
 
     def onTyping(self, author_id=None, status=None, thread_id=None, thread_type=None, msg=None):
         """
@@ -1802,7 +1802,7 @@ class Client(object):
         :param buddylist: A list of dicts with friend id and last seen timestamp
         :param msg: A full set of the data recieved
         """
-        log.debug('Chat Timestamps received: {}'.format(buddylist))
+        log.debug("Chat Timestamps received: {}".format(buddylist))
 
     def onUnknownMesssageType(self, msg=None):
         """
@@ -1810,7 +1810,7 @@ class Client(object):
 
         :param msg: A full set of the data recieved
         """
-        log.debug('Unknown message received: {}'.format(msg))
+        log.debug("Unknown message received: {}".format(msg))
 
     def onMessageError(self, exception=None, msg=None):
         """
@@ -1819,7 +1819,7 @@ class Client(object):
         :param exception: The exception that was encountered
         :param msg: A full set of the data recieved
         """
-        log.exception('Exception in parsing of {}'.format(msg))
+        log.exception("Exception in parsing of {}".format(msg))
 
     """
     END EVENTS

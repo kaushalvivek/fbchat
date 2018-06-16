@@ -55,7 +55,7 @@ class Thread(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<{} {} ({})>'.format(self.type.name, self.name, self.uid)
+        return "<{} {} ({})>".format(self.type.name, self.name, self.uid)
 
 
 class User(Thread):
@@ -208,7 +208,7 @@ class Message(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Message ({}): {}, mentions={} emoji_size={} attachments={}>'.format(self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments)
+        return "<Message ({}): {}, mentions={} emoji_size={} attachments={}>".format(self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments)
 
 
 class Attachment(object):
@@ -350,21 +350,21 @@ class ImageAttachment(Attachment):
 
         if preview is None:
             preview = {}
-        self.preview_url = preview.get('uri')
-        self.preview_width = preview.get('width')
-        self.preview_height = preview.get('height')
+        self.preview_url = preview.get("uri")
+        self.preview_width = preview.get("width")
+        self.preview_height = preview.get("height")
 
         if large_preview is None:
             large_preview = {}
-        self.large_preview_url = large_preview.get('uri')
-        self.large_preview_width = large_preview.get('width')
-        self.large_preview_height = large_preview.get('height')
+        self.large_preview_url = large_preview.get("uri")
+        self.large_preview_width = large_preview.get("width")
+        self.large_preview_height = large_preview.get("height")
 
         if animated_preview is None:
             animated_preview = {}
-        self.animated_preview_url = animated_preview.get('uri')
-        self.animated_preview_width = animated_preview.get('width')
-        self.animated_preview_height = animated_preview.get('height')
+        self.animated_preview_url = animated_preview.get("uri")
+        self.animated_preview_width = animated_preview.get("width")
+        self.animated_preview_height = animated_preview.get("height")
 
 
 class VideoAttachment(Attachment):
@@ -411,21 +411,21 @@ class VideoAttachment(Attachment):
 
         if small_image is None:
             small_image = {}
-        self.small_image_url = small_image.get('uri')
-        self.small_image_width = small_image.get('width')
-        self.small_image_height = small_image.get('height')
+        self.small_image_url = small_image.get("uri")
+        self.small_image_width = small_image.get("width")
+        self.small_image_height = small_image.get("height")
 
         if medium_image is None:
             medium_image = {}
-        self.medium_image_url = medium_image.get('uri')
-        self.medium_image_width = medium_image.get('width')
-        self.medium_image_height = medium_image.get('height')
+        self.medium_image_url = medium_image.get("uri")
+        self.medium_image_width = medium_image.get("width")
+        self.medium_image_height = medium_image.get("height")
 
         if large_image is None:
             large_image = {}
-        self.large_image_url = large_image.get('uri')
-        self.large_image_width = large_image.get('width')
-        self.large_image_height = large_image.get('height')
+        self.large_image_url = large_image.get("uri")
+        self.large_image_width = large_image.get("width")
+        self.large_image_height = large_image.get("height")
 
 
 class Mention(object):
@@ -446,7 +446,7 @@ class Mention(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Mention {}: offset={} length={}>'.format(self.thread_id, self.offset, self.length)
+        return "<Mention {}: offset={} length={}>".format(self.thread_id, self.offset, self.length)
 
 
 class Enum(enum.Enum):
@@ -454,7 +454,7 @@ class Enum(enum.Enum):
 
     def __repr__(self):
         # For documentation:
-        return '{}.{}'.format(type(self).__name__, self.name)
+        return "{}.{}".format(type(self).__name__, self.name)
 
 
 class ThreadType(Enum):
@@ -469,10 +469,10 @@ class ThreadType(Enum):
 class ThreadLocation(Enum):
     """Used to specify where a thread is located (inbox, pending, archived, other)."""
 
-    INBOX = 'INBOX'
-    PENDING = 'PENDING'
-    ARCHIVED = 'ARCHIVED'
-    OTHER = 'OTHER'
+    INBOX = "INBOX"
+    PENDING = "PENDING"
+    ARCHIVED = "ARCHIVED"
+    OTHER = "OTHER"
 
 
 class TypingStatus(Enum):
@@ -485,38 +485,38 @@ class TypingStatus(Enum):
 class EmojiSize(Enum):
     """Used to specify the size of a sent emoji"""
 
-    LARGE = '369239383222810'
-    MEDIUM = '369239343222814'
-    SMALL = '369239263222822'
+    LARGE = "369239383222810"
+    MEDIUM = "369239343222814"
+    SMALL = "369239263222822"
 
 
 class ThreadColor(Enum):
     """Used to specify a thread colors"""
 
-    MESSENGER_BLUE = '#0084ff'
-    VIKING = '#44bec7'
-    GOLDEN_POPPY = '#ffc300'
-    RADICAL_RED = '#fa3c4c'
-    SHOCKING = '#d696bb'
-    PICTON_BLUE = '#6699cc'
-    FREE_SPEECH_GREEN = '#13cf13'
-    PUMPKIN = '#ff7e29'
-    LIGHT_CORAL = '#e68585'
-    MEDIUM_SLATE_BLUE = '#7646ff'
-    DEEP_SKY_BLUE = '#20cef5'
-    FERN = '#67b868'
-    CAMEO = '#d4a88c'
-    BRILLIANT_ROSE = '#ff5ca1'
-    BILOBA_FLOWER = '#a695c7'
+    MESSENGER_BLUE = "#0084ff"
+    VIKING = "#44bec7"
+    GOLDEN_POPPY = "#ffc300"
+    RADICAL_RED = "#fa3c4c"
+    SHOCKING = "#d696bb"
+    PICTON_BLUE = "#6699cc"
+    FREE_SPEECH_GREEN = "#13cf13"
+    PUMPKIN = "#ff7e29"
+    LIGHT_CORAL = "#e68585"
+    MEDIUM_SLATE_BLUE = "#7646ff"
+    DEEP_SKY_BLUE = "#20cef5"
+    FERN = "#67b868"
+    CAMEO = "#d4a88c"
+    BRILLIANT_ROSE = "#ff5ca1"
+    BILOBA_FLOWER = "#a695c7"
 
 
 class MessageReaction(Enum):
     """Used to specify a message reaction"""
 
-    LOVE = '😍'
-    SMILE = '😆'
-    WOW = '😮'
-    SAD = '😢'
-    ANGRY = '😠'
-    YES = '👍'
-    NO = '👎'
+    LOVE = "😍"
+    SMILE = "😆"
+    WOW = "😮"
+    SAD = "😢"
+    ANGRY = "😠"
+    YES = "👍"
+    NO = "👎"

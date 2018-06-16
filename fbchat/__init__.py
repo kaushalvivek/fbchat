@@ -16,12 +16,12 @@ from .client import *
 """
 
 
-__copyright__ = 'Copyright 2015 - {} by Taehoon Kim'.format(datetime.now().year)
-__version__ = '1.3.8'
-__license__ = 'BSD'
-__author__ = 'Taehoon Kim; Moreels Pieter-Jan; Mads Marquart'
-__email__ = 'carpedm20@gmail.com'
-__source__ = 'https://github.com/carpedm20/fbchat/'
-__description__ = 'Facebook Chat (Messenger) for Python'
+__copyright__ = "Copyright 2015 - {} by Taehoon Kim".format(datetime.now().year)
+__version__ = "1.3.8"
+__license__ = "BSD"
+__author__ = "Taehoon Kim; Moreels Pieter-Jan; Mads Marquart"
+__email__ = "carpedm20@gmail.com"
+__source__ = "https://github.com/carpedm20/fbchat/"
+__description__ = "Facebook Chat (Messenger) for Python"
 
-__all__ = ['Client']
+__all__ = ["Client"]
