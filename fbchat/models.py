@@ -16,7 +16,13 @@ class FBchatFacebookError(FBchatException):
     #: The status code that was sent in the http response (eg. 404) (Usually only set if not successful, aka. not 200)
     request_status_code = None
 
-    def __init__(self, message, fb_error_code=None, fb_error_message=None, request_status_code=None):
+    def __init__(
+        self,
+        message,
+        fb_error_code=None,
+        fb_error_message=None,
+        request_status_code=None,
+    ):
         super(FBchatFacebookError, self).__init__(message)
         """Thrown by fbchat when Facebook returns an error"""
         self.fb_error_code = str(fb_error_code)
@@ -42,7 +48,15 @@ class Thread(object):
     #: Number of messages in the thread
     message_count = None
 
-    def __init__(self, _type, uid, photo=None, name=None, last_message_timestamp=None, message_count=None):
+    def __init__(
+        self,
+        _type,
+        uid,
+        photo=None,
+        name=None,
+        last_message_timestamp=None,
+        message_count=None,
+    ):
         """Represents a Facebook thread"""
         self.uid = str(uid)
         self.type = _type
@@ -80,7 +94,21 @@ class User(Thread):
     #: The default emoji
     emoji = None
 
-    def __init__(self, uid, url=None, first_name=None, last_name=None, is_friend=None, gender=None, affinity=None, nickname=None, own_nickname=None, color=None, emoji=None, **kwargs):
+    def __init__(
+        self,
+        uid,
+        url=None,
+        first_name=None,
+        last_name=None,
+        is_friend=None,
+        gender=None,
+        affinity=None,
+        nickname=None,
+        own_nickname=None,
+        color=None,
+        emoji=None,
+        **kwargs
+    ):
         """Represents a Facebook user. Inherits `Thread`"""
         super(User, self).__init__(ThreadType.USER, uid, **kwargs)
         self.url = url
@@ -105,7 +133,9 @@ class Group(Thread):
     #: The groups's default emoji
     emoji = None
 
-    def __init__(self, uid, participants=None, nicknames=None, color=None, emoji=None, **kwargs):
+    def __init__(
+        self, uid, participants=None, nicknames=None, color=None, emoji=None, **kwargs
+    ):
         """Represents a Facebook group. Inherits `Thread`"""
         super(Group, self).__init__(ThreadType.GROUP, uid, **kwargs)
         if participants is None:
@@ -130,7 +160,16 @@ class Room(Group):
     # True is room is not discoverable
     privacy_mode = None
 
-    def __init__(self, uid, admins=None, approval_mode=None, approval_requests=None, join_link=None, privacy_mode=None, **kwargs):
+    def __init__(
+        self,
+        uid,
+        admins=None,
+        approval_mode=None,
+        approval_requests=None,
+        join_link=None,
+        privacy_mode=None,
+        **kwargs
+    ):
         """Represents a Facebook room. Inherits `Group`"""
         super(Room, self).__init__(uid, **kwargs)
         self.type = ThreadType.ROOM
@@ -157,7 +196,16 @@ class Page(Thread):
     #: The page's category
     category = None
 
-    def __init__(self, uid, url=None, city=None, likes=None, sub_title=None, category=None, **kwargs):
+    def __init__(
+        self,
+        uid,
+        url=None,
+        city=None,
+        likes=None,
+        sub_title=None,
+        category=None,
+        **kwargs
+    ):
         """Represents a Facebook page. Inherits `Thread`"""
         super(Page, self).__init__(ThreadType.PAGE, uid, **kwargs)
         self.url = url
@@ -191,7 +239,9 @@ class Message(object):
     #: A list of attachments
     attachments = None
 
-    def __init__(self, text=None, mentions=None, emoji_size=None, sticker=None, attachments=None):
+    def __init__(
+        self, text=None, mentions=None, emoji_size=None, sticker=None, attachments=None
+    ):
         """Represents a Facebook message"""
         self.text = text
         if mentions is None:
@@ -208,7 +258,9 @@ class Message(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return "<Message ({}): {}, mentions={} emoji_size={} attachments={}>".format(self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments)
+        return "<Message ({}): {}, mentions={} emoji_size={} attachments={}>".format(
+            self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments
+        )
 
 
 class Attachment(object):
@@ -287,7 +339,9 @@ class AudioAttachment(Attachment):
     #: Audio type
     audio_type = None
 
-    def __init__(self, filename=None, url=None, duration=None, audio_type=None, **kwargs):
+    def __init__(
+        self, filename=None, url=None, duration=None, audio_type=None, **kwargs
+    ):
         """Represents an audio file that has been sent as a Facebook attachment"""
         super(AudioAttachment, self).__init__(**kwargs)
         self.filename = filename
@@ -331,7 +385,18 @@ class ImageAttachment(Attachment):
     #: Height of the animated preview image
     animated_preview_height = None
 
-    def __init__(self, original_extension=None, width=None, height=None, is_animated=None, thumbnail_url=None, preview=None, large_preview=None, animated_preview=None, **kwargs):
+    def __init__(
+        self,
+        original_extension=None,
+        width=None,
+        height=None,
+        is_animated=None,
+        thumbnail_url=None,
+        preview=None,
+        large_preview=None,
+        animated_preview=None,
+        **kwargs
+    ):
         """
         Represents an image that has been sent as a Facebook attachment
         To retrieve the full image url, use: :func:`fbchat.Client.fetchImageUrl`,
@@ -400,7 +465,18 @@ class VideoAttachment(Attachment):
     #: Height of the large preview image
     large_image_height = None
 
-    def __init__(self, size=None, width=None, height=None, duration=None, preview_url=None, small_image=None, medium_image=None, large_image=None, **kwargs):
+    def __init__(
+        self,
+        size=None,
+        width=None,
+        height=None,
+        duration=None,
+        preview_url=None,
+        small_image=None,
+        medium_image=None,
+        large_image=None,
+        **kwargs
+    ):
         """Represents a video that has been sent as a Facebook attachment"""
         super(VideoAttachment, self).__init__(**kwargs)
         self.size = size
@@ -446,7 +522,9 @@ class Mention(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return "<Mention {}: offset={} length={}>".format(self.thread_id, self.offset, self.length)
+        return "<Mention {}: offset={} length={}>".format(
+            self.thread_id, self.offset, self.length
+        )
 
 
 class Enum(enum.Enum):

@@ -43,8 +43,15 @@ def get_customization_info(thread):
         return {}
     info = thread["customization_info"]
 
-    rtn = {"emoji": info.get("emoji"), "color": graphql_color_to_enum(info.get("outgoing_bubble_color"))}
-    if thread.get("thread_type") in ("GROUP", "ROOM") or thread.get("is_group_thread") or thread.get("thread_key", {}).get("thread_fbid"):
+    rtn = {
+        "emoji": info.get("emoji"),
+        "color": graphql_color_to_enum(info.get("outgoing_bubble_color")),
+    }
+    if (
+        thread.get("thread_type") in ("GROUP", "ROOM")
+        or thread.get("is_group_thread")
+        or thread.get("thread_key", {}).get("thread_fbid")
+    ):
         rtn["nicknames"] = {}
         for k in info.get("participant_customizations", []):
             rtn["nicknames"][k["participant_id"]] = k.get("nickname")
@@ -89,7 +96,8 @@ def graphql_to_attachment(a):
     _type = a["__typename"]
     if _type in ["MessageImage", "MessageAnimatedImage"]:
         return ImageAttachment(
-            original_extension=a.get("original_extension") or (a["filename"].split("-")[0] if a.get("filename") else None),
+            original_extension=a.get("original_extension")
+            or (a["filename"].split("-")[0] if a.get("filename") else None),
             width=a.get("original_dimensions", {}).get("width"),
             height=a.get("original_dimensions", {}).get("height"),
             is_animated=_type == "MessageAnimatedImage",
@@ -111,9 +119,19 @@ def graphql_to_attachment(a):
             uid=a.get("legacy_attachment_id"),
         )
     elif _type == "MessageAudio":
-        return AudioAttachment(filename=a.get("filename"), url=a.get("playable_url"), duration=a.get("playable_duration_in_ms"), audio_type=a.get("audio_type"))
+        return AudioAttachment(
+            filename=a.get("filename"),
+            url=a.get("playable_url"),
+            duration=a.get("playable_duration_in_ms"),
+            audio_type=a.get("audio_type"),
+        )
     elif _type == "MessageFile":
-        return FileAttachment(url=a.get("url"), name=a.get("filename"), is_malicious=a.get("is_malicious"), uid=a.get("message_file_fbid"))
+        return FileAttachment(
+            url=a.get("url"),
+            name=a.get("filename"),
+            is_malicious=a.get("is_malicious"),
+            uid=a.get("message_file_fbid"),
+        )
     else:
         return Attachment(uid=a.get("legacy_attachment_id"))
 
@@ -125,7 +143,14 @@ def graphql_to_message(message):
         message["message"] = {}
     rtn = Message(
         text=message.get("message").get("text"),
-        mentions=[Mention(m.get("entity", {}).get("id"), offset=m.get("offset"), length=m.get("length")) for m in message.get("message").get("ranges", [])],
+        mentions=[
+            Mention(
+                m.get("entity", {}).get("id"),
+                offset=m.get("offset"),
+                length=m.get("length"),
+            )
+            for m in message.get("message").get("ranges", [])
+        ],
         emoji_size=get_emojisize_from_tags(message.get("tags_list")),
         sticker=graphql_to_sticker(message.get("sticker")),
     )
@@ -134,9 +159,15 @@ def graphql_to_message(message):
     rtn.timestamp = message.get("timestamp_precise")
     if message.get("unread") is not None:
         rtn.is_read = not message["unread"]
-    rtn.reactions = {str(r["user"]["id"]): MessageReaction(r["reaction"]) for r in message.get("message_reactions")}
+    rtn.reactions = {
+        str(r["user"]["id"]): MessageReaction(r["reaction"])
+        for r in message.get("message_reactions")
+    }
     if message.get("blob_attachments") is not None:
-        rtn.attachments = [graphql_to_attachment(attachment) for attachment in message["blob_attachments"]]
+        rtn.attachments = [
+            graphql_to_attachment(attachment)
+            for attachment in message["blob_attachments"]
+        ]
     # TODO: This is still missing parsing:
     # message.get('extensible_attachment')
     return rtn
@@ -171,11 +202,17 @@ def graphql_to_thread(thread):
         if thread.get("big_image_src") is None:
             thread["big_image_src"] = {}
         c_info = get_customization_info(thread)
-        participants = [node["messaging_actor"] for node in thread["all_participants"]["nodes"]]
-        user = next(p for p in participants if p["id"] == thread["thread_key"]["other_user_id"])
+        participants = [
+            node["messaging_actor"] for node in thread["all_participants"]["nodes"]
+        ]
+        user = next(
+            p for p in participants if p["id"] == thread["thread_key"]["other_user_id"]
+        )
         last_message_timestamp = None
         if "last_message" in thread:
-            last_message_timestamp = thread["last_message"]["nodes"][0]["timestamp_precise"]
+            last_message_timestamp = thread["last_message"]["nodes"][0][
+                "timestamp_precise"
+            ]
 
         return User(
             user["id"],
@@ -195,7 +232,11 @@ def graphql_to_thread(thread):
             last_message_timestamp=last_message_timestamp,
         )
     else:
-        raise FBchatException("Unknown thread type: {}, with data: {}".format(thread.get("thread_type"), thread))
+        raise FBchatException(
+            "Unknown thread type: {}, with data: {}".format(
+                thread.get("thread_type"), thread
+            )
+        )
 
 
 def graphql_to_group(group):
@@ -207,7 +248,12 @@ def graphql_to_group(group):
         last_message_timestamp = group["last_message"]["nodes"][0]["timestamp_precise"]
     return Group(
         group["thread_key"]["thread_fbid"],
-        participants=set([node["messaging_actor"]["id"] for node in group["all_participants"]["nodes"]]),
+        participants=set(
+            [
+                node["messaging_actor"]["id"]
+                for node in group["all_participants"]["nodes"]
+            ]
+        ),
         nicknames=c_info.get("nicknames"),
         color=c_info.get("color"),
         emoji=c_info.get("emoji"),
@@ -224,7 +270,12 @@ def graphql_to_room(room):
     c_info = get_customization_info(room)
     return Room(
         room["thread_key"]["thread_fbid"],
-        participants=set([node["messaging_actor"]["id"] for node in room["all_participants"]["nodes"]]),
+        participants=set(
+            [
+                node["messaging_actor"]["id"]
+                for node in room["all_participants"]["nodes"]
+            ]
+        ),
         nicknames=c_info.get("nicknames"),
         color=c_info.get("color"),
         emoji=c_info.get("emoji"),
@@ -233,7 +284,12 @@ def graphql_to_room(room):
         message_count=room.get("messages_count"),
         admins=set([node.get("id") for node in room.get("thread_admins")]),
         approval_mode=bool(room.get("approval_mode")),
-        approval_requests=set(node.get("id") for node in room["thread_queue_metadata"].get("approval_requests", {}).get("nodes")),
+        approval_requests=set(
+            node.get("id")
+            for node in room["thread_queue_metadata"]
+            .get("approval_requests", {})
+            .get("nodes")
+        ),
         join_link=room["joinable_mode"].get("link"),
         privacy_mode=bool(room.get("privacy_mode")),
     )

@@ -12,7 +12,13 @@ class RemoveBot(Client):
             self.removeUserFromGroup(author_id, thread_id=thread_id)
         else:
             # Sends the data to the inherited onMessage, so that we can still see when a message is recieved
-            super(RemoveBot, self).onMessage(author_id=author_id, message_object=message_object, thread_id=thread_id, thread_type=thread_type, **kwargs)
+            super(RemoveBot, self).onMessage(
+                author_id=author_id,
+                message_object=message_object,
+                thread_id=thread_id,
+                thread_type=thread_type,
+                **kwargs
+            )
 
 
 client = RemoveBot("<email>", "<password>")
