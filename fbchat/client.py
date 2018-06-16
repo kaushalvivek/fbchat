@@ -397,45 +397,41 @@ class Client(object):
         if "home" in r.url:
             return r
 
-        del (data["approvals_code"])
-        del (data["submit[Submit Code]"])
-        del (data["codes_submitted"])
+        del data["approvals_code"]
+        del data["submit[Submit Code]"]
+        del data["codes_submitted"]
 
         data["name_action_selected"] = "save_device"
         data["submit[Continue]"] = "Continue"
-        log.info(
-            "Saving browser."
-        )  # At this stage, we have dtsg, nh, name_action_selected, submit[Continue]
+        log.info("Saving browser.")
+        # At this stage, we have dtsg, nh, name_action_selected, submit[Continue]
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
         if "home" in r.url:
             return r
 
-        del (data["name_action_selected"])
-        log.info(
-            "Starting Facebook checkup flow."
-        )  # At this stage, we have dtsg, nh, submit[Continue]
+        del data["name_action_selected"]
+        log.info("Starting Facebook checkup flow.")
+        # At this stage, we have dtsg, nh, submit[Continue]
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
         if "home" in r.url:
             return r
 
-        del (data["submit[Continue]"])
+        del data["submit[Continue]"]
         data["submit[This was me]"] = "This Was Me"
-        log.info(
-            "Verifying login attempt."
-        )  # At this stage, we have dtsg, nh, submit[This was me]
+        log.info("Verifying login attempt.")
+        # At this stage, we have dtsg, nh, submit[This was me]
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
 
         if "home" in r.url:
             return r
 
-        del (data["submit[This was me]"])
+        del data["submit[This was me]"]
         data["submit[Continue]"] = "Continue"
         data["name_action_selected"] = "save_device"
-        log.info(
-            "Saving device again."
-        )  # At this stage, we have dtsg, nh, submit[Continue], name_action_selected
+        log.info("Saving device again.")
+        # At this stage, we have dtsg, nh, submit[Continue], name_action_selected
         r = self._cleanPost(self.req_url.CHECKPOINT, data)
         return r
 

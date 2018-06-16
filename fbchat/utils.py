@@ -116,15 +116,9 @@ class ReqUrl(object):
     ALL_USERS = "https://www.facebook.com/chat/user_info_all"
     SAVE_DEVICE = "https://m.facebook.com/login/save-device/cancel/"
     CHECKPOINT = "https://m.facebook.com/login/checkpoint/"
-    THREAD_COLOR = (
-        "https://www.facebook.com/messaging/save_thread_color/?source=thread_settings&dpr=1"
-    )
-    THREAD_NICKNAME = (
-        "https://www.facebook.com/messaging/save_thread_nickname/?source=thread_settings&dpr=1"
-    )
-    THREAD_EMOJI = (
-        "https://www.facebook.com/messaging/save_thread_emoji/?source=thread_settings&dpr=1"
-    )
+    THREAD_COLOR = "https://www.facebook.com/messaging/save_thread_color/"
+    THREAD_NICKNAME = "https://www.facebook.com/messaging/save_thread_nickname/"
+    THREAD_EMOJI = "https://www.facebook.com/messaging/save_thread_emoji/"
     MESSAGE_REACTION = "https://www.facebook.com/webgraphql/mutation"
     TYPING = "https://www.facebook.com/ajax/messaging/typ.php"
     GRAPHQL = "https://www.facebook.com/api/graphqlbatch/"
@@ -156,9 +150,7 @@ def strip_to_json(text):
     try:
         return text[text.index("{") :]
     except ValueError:
-        raise FBchatException(
-            "No JSON object found: {}, {}".format(repr(text), text.index("{"))
-        )
+        raise FBchatException("No JSON object found: {!r}".format(text))
 
 
 def get_decoded_r(r):
@@ -216,30 +208,26 @@ def check_json(j):
     if "errorDescription" in j:
         # 'errorDescription' is in the users own language!
         raise FBchatFacebookError(
-            "Error #{} when sending request: {}".format(
-                j["error"], j["errorDescription"]
-            ),
+            "Error #{error} when sending request: {errorDescription}".format(**j),
             fb_error_code=j["error"],
             fb_error_message=j["errorDescription"],
         )
     elif "debug_info" in j["error"] and "code" in j["error"]:
         raise FBchatFacebookError(
-            "Error #{} when sending request: {}".format(
-                j["error"]["code"], repr(j["error"]["debug_info"])
-            ),
+            "Error #{code} when sending request: {debug_info}".format(**j["error"]),
             fb_error_code=j["error"]["code"],
             fb_error_message=j["error"]["debug_info"],
         )
     else:
         raise FBchatFacebookError(
-            "Error {} when sending request".format(j["error"]), fb_error_code=j["error"]
+            "Error {error} when sending request".format(**j), fb_error_code=j["error"]
         )
 
 
 def check_request(r, as_json=True):
     if not r.ok:
         raise FBchatFacebookError(
-            "Error when sending request: Got {} response".format(r.status_code),
+            "Error when sending request: Got {status_code} response".format(r),
             request_status_code=r.status_code,
         )
 
@@ -253,9 +241,7 @@ def check_request(r, as_json=True):
         try:
             j = json.loads(content)
         except ValueError:
-            raise FBchatFacebookError(
-                "Error while parsing JSON: {}".format(repr(content))
-            )
+            raise FBchatFacebookError("Error while parsing JSON: {!r}".format(content))
         check_json(j)
         return j
     else:
