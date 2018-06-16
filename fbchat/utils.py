@@ -11,9 +11,11 @@ from .models import *
 
 try:
     from urllib.parse import urlencode
+
     basestring = (str, bytes)
 except ImportError:
     from urllib import urlencode
+
     basestring = basestring
 
 # Python 2's `input` executes the input, whereas `raw_input` just returns the input
@@ -36,17 +38,10 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 6.3; WOW64; ; NCT50_AAP285C84A1328) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36",
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
     "Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"
+    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6",
 ]
 
-LIKES = {
-    'large': EmojiSize.LARGE,
-    'medium': EmojiSize.MEDIUM,
-    'small': EmojiSize.SMALL,
-    'l': EmojiSize.LARGE,
-    'm': EmojiSize.MEDIUM,
-    's': EmojiSize.SMALL
-}
+LIKES = {'large': EmojiSize.LARGE, 'medium': EmojiSize.MEDIUM, 'small': EmojiSize.SMALL, 'l': EmojiSize.LARGE, 'm': EmojiSize.MEDIUM, 's': EmojiSize.SMALL}
 
 MessageReactionFix = {
     '😍': ('0001f60d', '%F0%9F%98%8D'),
@@ -55,7 +50,7 @@ MessageReactionFix = {
     '😢': ('0001f622', '%F0%9F%98%A2'),
     '😠': ('0001f620', '%F0%9F%98%A0'),
     '👍': ('0001f44d', '%F0%9F%91%8D'),
-    '👎': ('0001f44e', '%F0%9F%91%8E')
+    '👎': ('0001f44e', '%F0%9F%91%8E'),
 }
 
 
@@ -73,24 +68,25 @@ GENDERS = {
     9: 'male_plural',
     10: 'neuter_plural',
     11: 'unknown_plural',
-
     # For graphql requests
     'UNKNOWN': 'unknown',
     'FEMALE': 'female_singular',
     'MALE': 'male_singular',
-    #'': 'female_singular_guess',
-    #'': 'male_singular_guess',
-    #'': 'mixed',
+    # '': 'female_singular_guess',
+    # '': 'male_singular_guess',
+    # '': 'mixed',
     'NEUTER': 'neuter_singular',
-    #'': 'unknown_singular',
-    #'': 'female_plural',
-    #'': 'male_plural',
-    #'': 'neuter_plural',
-    #'': 'unknown_plural',
+    # '': 'unknown_singular',
+    # '': 'female_plural',
+    # '': 'male_plural',
+    # '': 'neuter_plural',
+    # '': 'unknown_plural',
 }
+
 
 class ReqUrl(object):
     """A class containing all urls used by `fbchat`"""
+
     SEARCH = "https://www.facebook.com/ajax/typeahead/search.php"
     LOGIN = "https://m.facebook.com/login.php?login_attempt=1"
     SEND = "https://www.facebook.com/messaging/send/"
@@ -127,7 +123,7 @@ class ReqUrl(object):
 
     def change_pull_channel(self, channel=None):
         if channel is None:
-            self.pull_channel = (self.pull_channel + 1) % 5 # Pull channel will be 0-4
+            self.pull_channel = (self.pull_channel + 1) % 5  # Pull channel will be 0-4
         else:
             self.pull_channel = channel
         self.STICKY = "https://{}-edge-chat.facebook.com/pull".format(self.pull_channel)
@@ -136,31 +132,39 @@ class ReqUrl(object):
 
 facebookEncoding = 'UTF-8'
 
+
 def now():
-    return int(time()*1000)
+    return int(time() * 1000)
+
 
 def strip_to_json(text):
     try:
-        return text[text.index('{'):]
+        return text[text.index('{') :]
     except ValueError:
         raise FBchatException('No JSON object found: {}, {}'.format(repr(text), text.index('{')))
+
 
 def get_decoded_r(r):
     return get_decoded(r._content)
 
+
 def get_decoded(content):
     return content.decode(facebookEncoding)
+
 
 def parse_json(content):
     return json.loads(content)
 
+
 def get_json(r):
     return json.loads(strip_to_json(get_decoded_r(r)))
+
 
 def digitToChar(digit):
     if digit < 10:
         return str(digit)
     return chr(ord('a') + digit - 10)
+
 
 def str_base(number, base):
     if number < 0:
@@ -170,13 +174,16 @@ def str_base(number, base):
         return str_base(d, base) + digitToChar(m)
     return digitToChar(m)
 
+
 def generateMessageID(client_id=None):
     k = now()
     l = int(random() * 4294967295)
     return "<{}:{}-{}@mail.projektitan.com>".format(k, l, client_id)
 
+
 def getSignatureID():
     return hex(int(random() * 2147483648))
+
 
 def generateOfflineThreadingID():
     ret = now()
@@ -185,6 +192,7 @@ def generateOfflineThreadingID():
     msgs = format(ret, 'b') + string
     return str(int(msgs, 2))
 
+
 def check_json(j):
     if j.get('error') is None:
         return
@@ -192,9 +200,12 @@ def check_json(j):
         # 'errorDescription' is in the users own language!
         raise FBchatFacebookError('Error #{} when sending request: {}'.format(j['error'], j['errorDescription']), fb_error_code=j['error'], fb_error_message=j['errorDescription'])
     elif 'debug_info' in j['error'] and 'code' in j['error']:
-        raise FBchatFacebookError('Error #{} when sending request: {}'.format(j['error']['code'], repr(j['error']['debug_info'])), fb_error_code=j['error']['code'], fb_error_message=j['error']['debug_info'])
+        raise FBchatFacebookError(
+            'Error #{} when sending request: {}'.format(j['error']['code'], repr(j['error']['debug_info'])), fb_error_code=j['error']['code'], fb_error_message=j['error']['debug_info']
+        )
     else:
         raise FBchatFacebookError('Error {} when sending request'.format(j['error']), fb_error_code=j['error'])
+
 
 def check_request(r, as_json=True):
     if not r.ok:
@@ -216,6 +227,7 @@ def check_request(r, as_json=True):
     else:
         return content
 
+
 def get_jsmods_require(j, index):
     if j.get('jsmods') and j['jsmods'].get('require'):
         try:
@@ -223,6 +235,7 @@ def get_jsmods_require(j, index):
         except (KeyError, IndexError) as e:
             log.warning('Error when getting jsmods_require: {}. Facebook might have changed protocol'.format(j))
     return None
+
 
 def get_emojisize_from_tags(tags):
     if tags is None:

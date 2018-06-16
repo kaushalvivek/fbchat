@@ -10,12 +10,8 @@ old_thread_id = '1234567890'
 old_color = ThreadColor.MESSENGER_BLUE
 old_emoji = '👍'
 old_title = 'Old group chat name'
-old_nicknames = {
-    '12345678901': "User nr. 1's nickname",
-    '12345678902': "User nr. 2's nickname",
-    '12345678903': "User nr. 3's nickname",
-    '12345678904': "User nr. 4's nickname"
-}
+old_nicknames = {'12345678901': "User nr. 1's nickname", '12345678902': "User nr. 2's nickname", '12345678903': "User nr. 3's nickname", '12345678904': "User nr. 4's nickname"}
+
 
 class KeepBot(Client):
     def onColorChange(self, author_id, new_color, thread_id, thread_type, **kwargs):
@@ -49,6 +45,7 @@ class KeepBot(Client):
         if old_thread_id == thread_id and changed_for in old_nicknames and old_nicknames[changed_for] != new_nickname:
             log.info("{} changed {}'s' nickname. It will be changed back".format(author_id, changed_for))
             self.changeNickname(old_nicknames[changed_for], changed_for, thread_id=thread_id, thread_type=thread_type)
+
 
 client = KeepBot("<email>", "<password>")
 client.listen()

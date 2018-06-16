@@ -7,6 +7,7 @@ import enum
 class FBchatException(Exception):
     """Custom exception thrown by fbchat. All exceptions in the fbchat module inherits this"""
 
+
 class FBchatFacebookError(FBchatException):
     #: The error code that Facebook returned
     fb_error_code = None
@@ -14,6 +15,7 @@ class FBchatFacebookError(FBchatException):
     fb_error_message = None
     #: The status code that was sent in the http response (eg. 404) (Usually only set if not successful, aka. not 200)
     request_status_code = None
+
     def __init__(self, message, fb_error_code=None, fb_error_message=None, request_status_code=None):
         super(FBchatFacebookError, self).__init__(message)
         """Thrown by fbchat when Facebook returns an error"""
@@ -21,8 +23,10 @@ class FBchatFacebookError(FBchatException):
         self.fb_error_message = fb_error_message
         self.request_status_code = request_status_code
 
+
 class FBchatUserError(FBchatException):
     """Thrown by fbchat when wrong values are entered"""
+
 
 class Thread(object):
     #: The unique identifier of the thread. Can be used a `thread_id`. See :ref:`intro_threads` for more info
@@ -37,6 +41,7 @@ class Thread(object):
     last_message_timestamp = None
     #: Number of messages in the thread
     message_count = None
+
     def __init__(self, _type, uid, photo=None, name=None, last_message_timestamp=None, message_count=None):
         """Represents a Facebook thread"""
         self.uid = str(uid)
@@ -205,6 +210,7 @@ class Message(object):
     def __unicode__(self):
         return '<Message ({}): {}, mentions={} emoji_size={} attachments={}>'.format(self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments)
 
+
 class Attachment(object):
     #: The attachment ID
     uid = None
@@ -212,6 +218,7 @@ class Attachment(object):
     def __init__(self, uid=None):
         """Represents a Facebook attachment"""
         self.uid = uid
+
 
 class Sticker(Attachment):
     #: The sticker-pack's ID
@@ -244,10 +251,12 @@ class Sticker(Attachment):
         """Represents a Facebook sticker that has been sent to a Facebook thread as an attachment"""
         super(Sticker, self).__init__(*args, **kwargs)
 
+
 class ShareAttachment(Attachment):
     def __init__(self, **kwargs):
         """Represents a shared item (eg. URL) that has been sent as a Facebook attachment - *Currently Incomplete!*"""
         super(ShareAttachment, self).__init__(**kwargs)
+
 
 class FileAttachment(Attachment):
     #: Url where you can download the file
@@ -267,6 +276,7 @@ class FileAttachment(Attachment):
         self.name = name
         self.is_malicious = is_malicious
 
+
 class AudioAttachment(Attachment):
     #: Name of the file
     filename = None
@@ -284,6 +294,7 @@ class AudioAttachment(Attachment):
         self.url = url
         self.duration = duration
         self.audio_type = audio_type
+
 
 class ImageAttachment(Attachment):
     #: The extension of the original image (eg. 'png')
@@ -354,6 +365,7 @@ class ImageAttachment(Attachment):
         self.animated_preview_url = animated_preview.get('uri')
         self.animated_preview_width = animated_preview.get('width')
         self.animated_preview_height = animated_preview.get('height')
+
 
 class VideoAttachment(Attachment):
     #: Size of the original video in bytes
@@ -436,39 +448,51 @@ class Mention(object):
     def __unicode__(self):
         return '<Mention {}: offset={} length={}>'.format(self.thread_id, self.offset, self.length)
 
+
 class Enum(enum.Enum):
     """Used internally by fbchat to support enumerations"""
+
     def __repr__(self):
         # For documentation:
         return '{}.{}'.format(type(self).__name__, self.name)
 
+
 class ThreadType(Enum):
     """Used to specify what type of Facebook thread is being used. See :ref:`intro_threads` for more info"""
+
     USER = 1
     GROUP = 2
     PAGE = 3
     ROOM = 4
 
+
 class ThreadLocation(Enum):
     """Used to specify where a thread is located (inbox, pending, archived, other)."""
+
     INBOX = 'INBOX'
     PENDING = 'PENDING'
     ARCHIVED = 'ARCHIVED'
     OTHER = 'OTHER'
 
+
 class TypingStatus(Enum):
     """Used to specify whether the user is typing or has stopped typing"""
+
     STOPPED = 0
     TYPING = 1
 
+
 class EmojiSize(Enum):
     """Used to specify the size of a sent emoji"""
+
     LARGE = '369239383222810'
     MEDIUM = '369239343222814'
     SMALL = '369239263222822'
 
+
 class ThreadColor(Enum):
     """Used to specify a thread colors"""
+
     MESSENGER_BLUE = '#0084ff'
     VIKING = '#44bec7'
     GOLDEN_POPPY = '#ffc300'
@@ -485,8 +509,10 @@ class ThreadColor(Enum):
     BRILLIANT_ROSE = '#ff5ca1'
     BILOBA_FLOWER = '#a695c7'
 
+
 class MessageReaction(Enum):
     """Used to specify a message reaction"""
+
     LOVE = '😍'
     SMILE = '😆'
     WOW = '😮'

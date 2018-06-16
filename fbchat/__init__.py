@@ -24,6 +24,4 @@ __email__ = 'carpedm20@gmail.com'
 __source__ = 'https://github.com/carpedm20/fbchat/'
 __description__ = 'Facebook Chat (Messenger) for Python'
 
-__all__ = [
-    'Client',
-]
+__all__ = ['Client']

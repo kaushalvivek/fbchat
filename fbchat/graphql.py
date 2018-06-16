@@ -10,6 +10,7 @@ from .utils import *
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 WHITESPACE = re.compile(r'[ \t\n\r]*', FLAGS)
 
+
 class ConcatJSONDecoder(json.JSONDecoder):
     def decode(self, s, _w=WHITESPACE.match):
         s_len = len(s)
@@ -21,7 +22,10 @@ class ConcatJSONDecoder(json.JSONDecoder):
             end = _w(s, end).end()
             objs.append(obj)
         return objs
+
+
 # End shameless copy
+
 
 def graphql_color_to_enum(color):
     if color is None:
@@ -33,15 +37,13 @@ def graphql_color_to_enum(color):
     except ValueError:
         raise FBchatException('Could not get ThreadColor from color: {}'.format(color))
 
+
 def get_customization_info(thread):
     if thread is None or thread.get('customization_info') is None:
         return {}
     info = thread['customization_info']
 
-    rtn = {
-        'emoji': info.get('emoji'),
-        'color': graphql_color_to_enum(info.get('outgoing_bubble_color'))
-    }
+    rtn = {'emoji': info.get('emoji'), 'color': graphql_color_to_enum(info.get('outgoing_bubble_color'))}
     if thread.get('thread_type') in ('GROUP', 'ROOM') or thread.get('is_group_thread') or thread.get('thread_key', {}).get('thread_fbid'):
         rtn['nicknames'] = {}
         for k in info.get('participant_customizations', []):
@@ -65,9 +67,7 @@ def get_customization_info(thread):
 def graphql_to_sticker(s):
     if not s:
         return None
-    sticker = Sticker(
-        uid=s['id']
-    )
+    sticker = Sticker(uid=s['id'])
     if s.get('pack'):
         sticker.pack = s['pack'].get('id')
     if s.get('sprite_image'):
@@ -84,6 +84,7 @@ def graphql_to_sticker(s):
         sticker.label = s['label']
     return sticker
 
+
 def graphql_to_attachment(a):
     _type = a['__typename']
     if _type in ['MessageImage', 'MessageAnimatedImage']:
@@ -91,12 +92,12 @@ def graphql_to_attachment(a):
             original_extension=a.get('original_extension') or (a['filename'].split('-')[0] if a.get('filename') else None),
             width=a.get('original_dimensions', {}).get('width'),
             height=a.get('original_dimensions', {}).get('height'),
-            is_animated=_type=='MessageAnimatedImage',
+            is_animated=_type == 'MessageAnimatedImage',
             thumbnail_url=a.get('thumbnail', {}).get('uri'),
             preview=a.get('preview') or a.get('preview_image'),
             large_preview=a.get('large_preview'),
             animated_preview=a.get('animated_image'),
-            uid=a.get('legacy_attachment_id')
+            uid=a.get('legacy_attachment_id'),
         )
     elif _type == 'MessageVideo':
         return VideoAttachment(
@@ -107,26 +108,15 @@ def graphql_to_attachment(a):
             small_image=a.get('chat_image'),
             medium_image=a.get('inbox_image'),
             large_image=a.get('large_image'),
-            uid=a.get('legacy_attachment_id')
+            uid=a.get('legacy_attachment_id'),
         )
     elif _type == 'MessageAudio':
-        return AudioAttachment(
-            filename=a.get('filename'),
-            url=a.get('playable_url'),
-            duration=a.get('playable_duration_in_ms'),
-            audio_type=a.get('audio_type')
-        )
+        return AudioAttachment(filename=a.get('filename'), url=a.get('playable_url'), duration=a.get('playable_duration_in_ms'), audio_type=a.get('audio_type'))
     elif _type == 'MessageFile':
-        return FileAttachment(
-            url=a.get('url'),
-            name=a.get('filename'),
-            is_malicious=a.get('is_malicious'),
-            uid=a.get('message_file_fbid')
-        )
+        return FileAttachment(url=a.get('url'), name=a.get('filename'), is_malicious=a.get('is_malicious'), uid=a.get('message_file_fbid'))
     else:
-        return Attachment(
-            uid=a.get('legacy_attachment_id')
-        )
+        return Attachment(uid=a.get('legacy_attachment_id'))
+
 
 def graphql_to_message(message):
     if message.get('message_sender') is None:
@@ -137,19 +127,20 @@ def graphql_to_message(message):
         text=message.get('message').get('text'),
         mentions=[Mention(m.get('entity', {}).get('id'), offset=m.get('offset'), length=m.get('length')) for m in message.get('message').get('ranges', [])],
         emoji_size=get_emojisize_from_tags(message.get('tags_list')),
-        sticker=graphql_to_sticker(message.get('sticker'))
+        sticker=graphql_to_sticker(message.get('sticker')),
     )
     rtn.uid = str(message.get('message_id'))
     rtn.author = str(message.get('message_sender').get('id'))
     rtn.timestamp = message.get('timestamp_precise')
     if message.get('unread') is not None:
         rtn.is_read = not message['unread']
-    rtn.reactions = {str(r['user']['id']):MessageReaction(r['reaction']) for r in message.get('message_reactions')}
+    rtn.reactions = {str(r['user']['id']): MessageReaction(r['reaction']) for r in message.get('message_reactions')}
     if message.get('blob_attachments') is not None:
         rtn.attachments = [graphql_to_attachment(attachment) for attachment in message['blob_attachments']]
     # TODO: This is still missing parsing:
     # message.get('extensible_attachment')
     return rtn
+
 
 def graphql_to_user(user):
     if user.get('profile_picture') is None:
@@ -169,8 +160,9 @@ def graphql_to_user(user):
         own_nickname=c_info.get('own_nickname'),
         photo=user['profile_picture'].get('uri'),
         name=user.get('name'),
-        message_count=user.get('messages_count')
+        message_count=user.get('messages_count'),
     )
+
 
 def graphql_to_thread(thread):
     if thread['thread_type'] == 'GROUP':
@@ -190,7 +182,7 @@ def graphql_to_thread(thread):
             url=user.get('url'),
             name=user.get('name'),
             first_name=user.get('short_name'),
-            last_name=user.get('name').split(user.get('short_name'),1).pop().strip(),
+            last_name=user.get('name').split(user.get('short_name'), 1).pop().strip(),
             is_friend=user.get('is_viewer_friend'),
             gender=GENDERS.get(user.get('gender')),
             affinity=user.get('affinity'),
@@ -200,10 +192,11 @@ def graphql_to_thread(thread):
             own_nickname=c_info.get('own_nickname'),
             photo=user['big_image_src'].get('uri'),
             message_count=thread.get('messages_count'),
-            last_message_timestamp=last_message_timestamp
+            last_message_timestamp=last_message_timestamp,
         )
     else:
         raise FBchatException('Unknown thread type: {}, with data: {}'.format(thread.get('thread_type'), thread))
+
 
 def graphql_to_group(group):
     if group.get('image') is None:
@@ -221,8 +214,9 @@ def graphql_to_group(group):
         photo=group['image'].get('uri'),
         name=group.get('name'),
         message_count=group.get('messages_count'),
-        last_message_timestamp=last_message_timestamp
+        last_message_timestamp=last_message_timestamp,
     )
+
 
 def graphql_to_room(room):
     if room.get('image') is None:
@@ -237,12 +231,13 @@ def graphql_to_room(room):
         photo=room['image'].get('uri'),
         name=room.get('name'),
         message_count=room.get('messages_count'),
-        admins = set([node.get('id') for node in room.get('thread_admins')]),
-        approval_mode = bool(room.get('approval_mode')),
-        approval_requests = set(node.get('id') for node in room['thread_queue_metadata'].get('approval_requests', {}).get('nodes')),
-        join_link = room['joinable_mode'].get('link'),
-        privacy_mode = bool(room.get('privacy_mode')),
+        admins=set([node.get('id') for node in room.get('thread_admins')]),
+        approval_mode=bool(room.get('approval_mode')),
+        approval_requests=set(node.get('id') for node in room['thread_queue_metadata'].get('approval_requests', {}).get('nodes')),
+        join_link=room['joinable_mode'].get('link'),
+        privacy_mode=bool(room.get('privacy_mode')),
     )
+
 
 def graphql_to_page(page):
     if page.get('profile_picture') is None:
@@ -256,8 +251,9 @@ def graphql_to_page(page):
         category=page.get('category_type'),
         photo=page['profile_picture'].get('uri'),
         name=page.get('name'),
-        message_count=page.get('messages_count')
+        message_count=page.get('messages_count'),
     )
+
 
 def graphql_queries_to_json(*queries):
     """
@@ -268,14 +264,15 @@ def graphql_queries_to_json(*queries):
         rtn['q{}'.format(i)] = query.value
     return json.dumps(rtn)
 
+
 def graphql_response_to_json(content):
-    content = strip_to_json(content) # Usually only needed in some error cases
+    content = strip_to_json(content)  # Usually only needed in some error cases
     try:
         j = json.loads(content, cls=ConcatJSONDecoder)
     except Exception:
         raise FBchatException('Error while parsing JSON: {}'.format(repr(content)))
 
-    rtn = [None]*(len(j))
+    rtn = [None] * (len(j))
     for x in j:
         if 'error_results' in x:
             del rtn[-1]
@@ -292,24 +289,17 @@ def graphql_response_to_json(content):
 
     return rtn
 
+
 class GraphQL(object):
     def __init__(self, query=None, doc_id=None, params=None):
         if params is None:
             params = {}
         if query is not None:
-            self.value = {
-                'priority': 0,
-                'q': query,
-                'query_params': params
-            }
+            self.value = {'priority': 0, 'q': query, 'query_params': params}
         elif doc_id is not None:
-            self.value = {
-                'doc_id': doc_id,
-                'query_params': params
-            }
+            self.value = {'doc_id': doc_id, 'query_params': params}
         else:
             raise FBchatUserError('A query or doc_id must be specified')
-
 
     FRAGMENT_USER = """
     QueryFragment User: User {
@@ -370,7 +360,8 @@ class GraphQL(object):
     }
     """
 
-    SEARCH_USER = """
+    SEARCH_USER = (
+        """
     Query SearchUser(<search> = '', <limit> = 1) {
         entities_named(<search>) {
             search_results.of_type(user).first(<limit>) as users {
@@ -380,9 +371,12 @@ class GraphQL(object):
             }
         }
     }
-    """ + FRAGMENT_USER
+    """
+        + FRAGMENT_USER
+    )
 
-    SEARCH_GROUP = """
+    SEARCH_GROUP = (
+        """
     Query SearchGroup(<search> = '', <limit> = 1, <pic_size> = 32) {
         viewer() {
             message_threads.with_thread_name(<search>).last(<limit>) as groups {
@@ -392,9 +386,12 @@ class GraphQL(object):
             }
         }
     }
-    """ + FRAGMENT_GROUP
+    """
+        + FRAGMENT_GROUP
+    )
 
-    SEARCH_PAGE = """
+    SEARCH_PAGE = (
+        """
     Query SearchPage(<search> = '', <limit> = 1) {
         entities_named(<search>) {
             search_results.of_type(page).first(<limit>) as pages {
@@ -404,9 +401,12 @@ class GraphQL(object):
             }
         }
     }
-    """ + FRAGMENT_PAGE
+    """
+        + FRAGMENT_PAGE
+    )
 
-    SEARCH_THREAD = """
+    SEARCH_THREAD = (
+        """
     Query SearchThread(<search> = '', <limit> = 1) {
         entities_named(<search>) {
             search_results.first(<limit>) as threads {
@@ -419,4 +419,8 @@ class GraphQL(object):
             }
         }
     }
-    """ + FRAGMENT_USER + FRAGMENT_GROUP + FRAGMENT_PAGE
+    """
+        + FRAGMENT_USER
+        + FRAGMENT_GROUP
+        + FRAGMENT_PAGE
+    )
