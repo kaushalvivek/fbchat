@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -ex
+
+if [[ "$CHECK_FORMATTING" = true ]]; then
+    pip install black
+    black --diff --check setup.py fbchat examples tests docs
+else
+    if [[ "$TRAVIS_PULL_REQUEST" != false ]]; then
+        export PYTEST_ADDOPTS='-m offline' # Only run the offline tests
+    fi
+    python -m pytest || python -m pytest --lf # Run failed tests twice
+fi

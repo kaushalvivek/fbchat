@@ -6,6 +6,13 @@ python:
 - 3.5
 - 3.6
 
+matrix:
+  include:
+    - python: 2.7
+      env: CHECK_FORMATTING=true
+    - python: 2.7
+      env: PYTEST_ADDOPTS='-m expensive' # Only run the expensive tests
+
 env:
   global:
     # These two accounts are made specifically for this purpose, and the passwords are really only encrypted for obscurity
@@ -16,11 +23,7 @@ env:
     - secure: "V7RB3go2Tc/DdW1x9DkMI+vCfnOgiS3ygmFCABs/GjfPZjZL7VLMJgYGlx0cjeeeN+Oxa2GrhczRAKeMdGB6Ss2lGGAVs6cjJ56ODuBHWT6/FNzLjtDkTnjD+Kfh0l8ZOdxTF3MQ6M/9hU6z5ek+XYGr7u+/7wOYZ5L2cK5MaQ0=" # client2_password
     - group_id=1463789480385605
 
-before_script:
-  - if [[ "$TRAVIS_PYTHON_VERSION" = "2.7" ]]; then export PYTEST_ADDOPTS='-m ""'; fi; # expensive tests (otherwise disabled in pytest.ini)
-  - if [[ "$TRAVIS_PULL_REQUEST" != false ]]; then export PYTEST_ADDOPTS='-m offline'; fi; # offline tests only
-
-script: python -m pytest || python -m pytest --lf; # Run failed tests twice
+script: scripts/travis
 
 cache: pip
 
