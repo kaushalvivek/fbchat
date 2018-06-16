@@ -8,7 +8,7 @@ python:
 
 matrix:
   include:
-    - python: 2.7
+    - python: 3.6
       env: CHECK_FORMATTING=true
     - python: 2.7
       env: PYTEST_ADDOPTS='-m expensive' # Only run the expensive tests
