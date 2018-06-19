@@ -11,8 +11,10 @@ matrix:
   include:
     - python: 3.6
       env: CHECK_FORMATTING=true
-    - python: 2.7
-      env: PYTEST_ADDOPTS='-m expensive' # Only run the expensive tests
+      # Run the expensive tests, that include relogging and such, with the python version most likely to break
+    - if: branch = master
+      python: 2.7
+      env: PYTEST_ADDOPTS='-m expensive'
 
 env:
   global:
