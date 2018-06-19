@@ -5,6 +5,7 @@ python:
 - 3.4
 - 3.5
 - 3.6
+- pypy
 
 matrix:
   include:
@@ -25,7 +26,10 @@ env:
 
 script: scripts/travis
 
-cache: pip
+cache:
+  pip: true
+  directories:
+    - .pytest_cache
 
 deploy:
   provider: pypi
