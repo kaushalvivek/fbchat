@@ -116,15 +116,9 @@ class ReqUrl(object):
     ALL_USERS = "https://www.facebook.com/chat/user_info_all"
     SAVE_DEVICE = "https://m.facebook.com/login/save-device/cancel/"
     CHECKPOINT = "https://m.facebook.com/login/checkpoint/"
-    THREAD_COLOR = (
-        "https://www.facebook.com/messaging/save_thread_color/?source=thread_settings&dpr=1"
-    )
-    THREAD_NICKNAME = (
-        "https://www.facebook.com/messaging/save_thread_nickname/?source=thread_settings&dpr=1"
-    )
-    THREAD_EMOJI = (
-        "https://www.facebook.com/messaging/save_thread_emoji/?source=thread_settings&dpr=1"
-    )
+    THREAD_COLOR = "https://www.facebook.com/messaging/save_thread_color/?source=thread_settings&dpr=1"
+    THREAD_NICKNAME = "https://www.facebook.com/messaging/save_thread_nickname/?source=thread_settings&dpr=1"
+    THREAD_EMOJI = "https://www.facebook.com/messaging/save_thread_emoji/?source=thread_settings&dpr=1"
     MESSAGE_REACTION = "https://www.facebook.com/webgraphql/mutation"
     TYPING = "https://www.facebook.com/ajax/messaging/typ.php"
     GRAPHQL = "https://www.facebook.com/api/graphqlbatch/"
@@ -157,7 +151,7 @@ def strip_to_json(text):
     try:
         return text[text.index("{") :]
     except ValueError:
-        raise FBchatException('No JSON object found: {!r}'.format(text))
+        raise FBchatException("No JSON object found: {!r}".format(text))
 
 
 def get_decoded_r(r):
@@ -248,7 +242,7 @@ def check_request(r, as_json=True):
         try:
             j = json.loads(content)
         except ValueError:
-            raise FBchatFacebookError('Error while parsing JSON: {!r}'.format(content))
+            raise FBchatFacebookError("Error while parsing JSON: {!r}".format(content))
         check_json(j)
         return j
     else:

@@ -11,6 +11,7 @@ from .utils import *
 from .models import *
 from .graphql import *
 import time
+
 try:
     from urllib.parse import urlparse, parse_qs
 except ImportError:
@@ -1559,11 +1560,7 @@ class Client(object):
         :param friend_id: The id of the friend that you want to remove
         :return: Returns error if the removing was unsuccessful, returns True when successful.
         """
-        payload = {
-            "friend_id": friend_id,
-            "unref": "none",
-            "confirm": "Confirm",
-        }
+        payload = {"friend_id": friend_id, "unref": "none", "confirm": "Confirm"}
         r = self._post(self.req_url.REMOVE_FRIEND, payload)
         query = parse_qs(urlparse(r.url).query)
         if "err" not in query:
