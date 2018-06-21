@@ -72,7 +72,7 @@ jobs:
     - &test-formatting
       stage: formatting test
       python: 3.6
-      install: pip install -U black -r requirements.txt
+      before_script: pip install -U black
       script: black --diff --check setup.py fbchat examples tests docs
 
     # Deploy to PyPI
