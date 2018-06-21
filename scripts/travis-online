@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -ex
+
+if ! python -m pytest --tb=no --color=yes; then # --tb=no -> Don't print stack traces
+    echo 'Some tests failed. Rerunning them, since they can be kinda flaky.'
+    python -m pytest --last-failed --color=yes
+fi

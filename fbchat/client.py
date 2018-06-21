@@ -11,6 +11,10 @@ from .utils import *
 from .models import *
 from .graphql import *
 import time
+try:
+    from urllib.parse import urlparse, parse_qs
+except ImportError:
+    from urlparse import urlparse, parse_qs
 
 
 class Client(object):
@@ -306,7 +310,7 @@ class Client(object):
         self.ttstamp = ""
 
         r = self._get(self.req_url.BASE)
-        soup = bs(r.text, "lxml")
+        soup = bs(r.text, "html.parser")
 
         fb_dtsg_element = soup.find("input", {"name": "fb_dtsg"})
         if fb_dtsg_element:
@@ -350,7 +354,7 @@ class Client(object):
         if not (self.email and self.password):
             raise FBchatUserError("Email and password not found.")
 
-        soup = bs(self._get(self.req_url.MOBILE).text, "lxml")
+        soup = bs(self._get(self.req_url.MOBILE).text, "html.parser")
         data = dict(
             (elem["name"], elem["value"])
             for elem in soup.findAll("input")
@@ -380,7 +384,7 @@ class Client(object):
             return False, r.url
 
     def _2FA(self, r):
-        soup = bs(r.text, "lxml")
+        soup = bs(r.text, "html.parser")
         data = dict()
 
         s = self.on2FACode()
@@ -1548,6 +1552,26 @@ class Client(object):
 
         r = self._post(self.req_url.CONNECT, data)
         return r.ok
+
+    def removeFriend(self, friend_id=None):
+        """Removes a specifed friend from your friend list
+
+        :param friend_id: The id of the friend that you want to remove
+        :return: Returns error if the removing was unsuccessful, returns True when successful.
+        """
+        payload = {
+            "friend_id": friend_id,
+            "unref": "none",
+            "confirm": "Confirm",
+        }
+        r = self._post(self.req_url.REMOVE_FRIEND, payload)
+        query = parse_qs(urlparse(r.url).query)
+        if "err" not in query:
+            log.debug("Remove was successful!")
+            return True
+        else:
+            log.warning("Error while removing friend")
+            return False
 
     """
     LISTEN METHODS
