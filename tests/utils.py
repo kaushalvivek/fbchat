@@ -23,15 +23,15 @@ EMOJI_LIST = [
     ("😆", EmojiSize.LARGE),
     # These fail in `catch_event` because the emoji is made into a sticker
     # This should be fixed
-    pytest.mark.xfail((None, EmojiSize.SMALL)),
-    pytest.mark.xfail((None, EmojiSize.MEDIUM)),
-    pytest.mark.xfail((None, EmojiSize.LARGE)),
+    pytest.param(None, EmojiSize.SMALL, marks=[pytest.mark.xfail()]),
+    pytest.param(None, EmojiSize.MEDIUM, marks=[pytest.mark.xfail()]),
+    pytest.param(None, EmojiSize.LARGE, marks=[pytest.mark.xfail()]),
 ]
 
 STICKER_LIST = [
     Sticker("767334476626295"),
-    pytest.mark.xfail(Sticker("0"), raises=FBchatFacebookError),
-    pytest.mark.xfail(Sticker(None), raises=FBchatFacebookError),
+    pytest.param(Sticker("0"), marks=[pytest.mark.xfail(raises=FBchatFacebookError)]),
+    pytest.param(Sticker(None), marks=[pytest.mark.xfail(raises=FBchatFacebookError)]),
 ]
 
 TEXT_LIST = [
@@ -40,8 +40,8 @@ TEXT_LIST = [
     "\\\n\t%?&'\"",
     "ˁҭʚ¹Ʋջوװ՞ޱɣࠚԹБɑȑңКએ֭ʗыԈٌʼőԈ×௴nચϚࠖణٔє܅Ԇޑط",
     "a" * 20000,  # Maximum amount of characters you can send
-    pytest.mark.xfail("a" * 20001, raises=FBchatFacebookError),
-    pytest.mark.xfail(None, raises=FBchatFacebookError),
+    pytest.param("a" * 20001, marks=[pytest.mark.xfail(raises=FBchatFacebookError)]),
+    pytest.param(None, marks=[pytest.mark.xfail(raises=FBchatFacebookError)]),
 ]
 
 
@@ -106,7 +106,7 @@ def load_client(n, cache):
     client = Client(
         load_variable("client{}_email".format(n), cache),
         load_variable("client{}_password".format(n), cache),
-        user_agent='Mozilla/5.0 (Windows NT 6.3; WOW64; ; NCT50_AAP285C84A1328) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36',
+        user_agent="Mozilla/5.0 (Windows NT 6.3; WOW64; ; NCT50_AAP285C84A1328) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36",
         session_cookies=cache.get("client{}_session".format(n), None),
         max_tries=1,
     )

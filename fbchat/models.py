@@ -1,11 +1,13 @@
 # -*- coding: UTF-8 -*-
 
 from __future__ import unicode_literals
-import enum
+import aenum
+from string import Formatter
 
 
 class FBchatException(Exception):
     """Custom exception thrown by fbchat. All exceptions in the fbchat module inherits this"""
+
 
 class FBchatFacebookError(FBchatException):
     #: The error code that Facebook returned
@@ -14,15 +16,24 @@ class FBchatFacebookError(FBchatException):
     fb_error_message = None
     #: The status code that was sent in the http response (eg. 404) (Usually only set if not successful, aka. not 200)
     request_status_code = None
-    def __init__(self, message, fb_error_code=None, fb_error_message=None, request_status_code=None):
+
+    def __init__(
+        self,
+        message,
+        fb_error_code=None,
+        fb_error_message=None,
+        request_status_code=None,
+    ):
         super(FBchatFacebookError, self).__init__(message)
         """Thrown by fbchat when Facebook returns an error"""
         self.fb_error_code = str(fb_error_code)
         self.fb_error_message = fb_error_message
         self.request_status_code = request_status_code
 
+
 class FBchatUserError(FBchatException):
     """Thrown by fbchat when wrong values are entered"""
+
 
 class Thread(object):
     #: The unique identifier of the thread. Can be used a `thread_id`. See :ref:`intro_threads` for more info
@@ -39,7 +50,17 @@ class Thread(object):
     message_count = None
     #: Set :class:`Plan`
     plan = None
-    def __init__(self, _type, uid, photo=None, name=None, last_message_timestamp=None, message_count=None, plan=None):
+
+    def __init__(
+        self,
+        _type,
+        uid,
+        photo=None,
+        name=None,
+        last_message_timestamp=None,
+        message_count=None,
+        plan=None,
+    ):
         """Represents a Facebook thread"""
         self.uid = str(uid)
         self.type = _type
@@ -53,7 +74,7 @@ class Thread(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<{} {} ({})>'.format(self.type.name, self.name, self.uid)
+        return "<{} {} ({})>".format(self.type.name, self.name, self.uid)
 
 
 class User(Thread):
@@ -78,7 +99,21 @@ class User(Thread):
     #: The default emoji
     emoji = None
 
-    def __init__(self, uid, url=None, first_name=None, last_name=None, is_friend=None, gender=None, affinity=None, nickname=None, own_nickname=None, color=None, emoji=None, **kwargs):
+    def __init__(
+        self,
+        uid,
+        url=None,
+        first_name=None,
+        last_name=None,
+        is_friend=None,
+        gender=None,
+        affinity=None,
+        nickname=None,
+        own_nickname=None,
+        color=None,
+        emoji=None,
+        **kwargs
+    ):
         """Represents a Facebook user. Inherits `Thread`"""
         super(User, self).__init__(ThreadType.USER, uid, **kwargs)
         self.url = url
@@ -111,7 +146,20 @@ class Group(Thread):
     # Link for joining group
     join_link = None
 
-    def __init__(self, uid, participants=None, nicknames=None, color=None, emoji=None, admins=None, approval_mode=None, approval_requests=None, join_link=None, privacy_mode=None, **kwargs):
+    def __init__(
+        self,
+        uid,
+        participants=None,
+        nicknames=None,
+        color=None,
+        emoji=None,
+        admins=None,
+        approval_mode=None,
+        approval_requests=None,
+        join_link=None,
+        privacy_mode=None,
+        **kwargs
+    ):
         """Represents a Facebook group. Inherits `Thread`"""
         super(Group, self).__init__(ThreadType.GROUP, uid, **kwargs)
         if participants is None:
@@ -155,7 +203,16 @@ class Page(Thread):
     #: The page's category
     category = None
 
-    def __init__(self, uid, url=None, city=None, likes=None, sub_title=None, category=None, **kwargs):
+    def __init__(
+        self,
+        uid,
+        url=None,
+        city=None,
+        likes=None,
+        sub_title=None,
+        category=None,
+        **kwargs
+    ):
         """Represents a Facebook page. Inherits `Thread`"""
         super(Page, self).__init__(ThreadType.PAGE, uid, **kwargs)
         self.url = url
@@ -190,8 +247,20 @@ class Message(object):
     sticker = None
     #: A list of attachments
     attachments = None
+    #: A list of :class:`QuickReply`
+    quick_replies = None
+    #: Whether the message is unsent (deleted for everyone)
+    unsent = None
 
-    def __init__(self, text=None, mentions=None, emoji_size=None, sticker=None, attachments=None):
+    def __init__(
+        self,
+        text=None,
+        mentions=None,
+        emoji_size=None,
+        sticker=None,
+        attachments=None,
+        quick_replies=None,
+    ):
         """Represents a Facebook message"""
         self.text = text
         if mentions is None:
@@ -202,14 +271,74 @@ class Message(object):
         if attachments is None:
             attachments = []
         self.attachments = attachments
+        if quick_replies is None:
+            quick_replies = []
+        self.quick_replies = quick_replies
         self.reactions = {}
         self.read_by = []
+        self.deleted = False
 
     def __repr__(self):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Message ({}): {}, mentions={} emoji_size={} attachments={}>'.format(self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments)
+        return "<Message ({}): {}, mentions={} emoji_size={} attachments={}>".format(
+            self.uid, repr(self.text), self.mentions, self.emoji_size, self.attachments
+        )
+
+    @classmethod
+    def formatMentions(cls, text, *args, **kwargs):
+        """Like `str.format`, but takes tuples with a thread id and text instead.
+
+        Returns a `Message` object, with the formatted string and relevant mentions.
+
+        ```
+        >>> Message.formatMentions("Hey {!r}! My name is {}", ("1234", "Peter"), ("4321", "Michael"))
+        <Message (None): "Hey 'Peter'! My name is Michael", mentions=[<Mention 1234: offset=4 length=7>, <Mention 4321: offset=24 length=7>] emoji_size=None attachments=[]>
+
+        >>> Message.formatMentions("Hey {p}! My name is {}", ("1234", "Michael"), p=("4321", "Peter"))
+        <Message (None): 'Hey Peter! My name is Michael', mentions=[<Mention 4321: offset=4 length=5>, <Mention 1234: offset=22 length=7>] emoji_size=None attachments=[]>
+        ```
+        """
+        result = ""
+        mentions = list()
+        offset = 0
+        f = Formatter()
+        field_names = [field_name[1] for field_name in f.parse(text)]
+        automatic = "" in field_names
+        i = 0
+
+        for (literal_text, field_name, format_spec, conversion) in f.parse(text):
+            offset += len(literal_text)
+            result += literal_text
+
+            if field_name is None:
+                continue
+
+            if field_name == "":
+                field_name = str(i)
+                i += 1
+            elif automatic and field_name.isdigit():
+                raise ValueError(
+                    "cannot switch from automatic field numbering to manual field specification"
+                )
+
+            thread_id, name = f.get_field(field_name, args, kwargs)[0]
+
+            if format_spec:
+                name = f.format_field(name, format_spec)
+            if conversion:
+                name = f.convert_field(name, conversion)
+
+            result += name
+            mentions.append(
+                Mention(thread_id=thread_id, offset=offset, length=len(name))
+            )
+            offset += len(name)
+
+        message = cls(text=result, mentions=mentions)
+        return message
+
 
 class Attachment(object):
     #: The attachment ID
@@ -218,6 +347,13 @@ class Attachment(object):
     def __init__(self, uid=None):
         """Represents a Facebook attachment"""
         self.uid = uid
+
+
+class UnsentMessage(Attachment):
+    def __init__(self, *args, **kwargs):
+        """Represents an unsent message attachment"""
+        super(UnsentMessage, self).__init__(*args, **kwargs)
+
 
 class Sticker(Attachment):
     #: The sticker-pack's ID
@@ -250,10 +386,98 @@ class Sticker(Attachment):
         """Represents a Facebook sticker that has been sent to a Facebook thread as an attachment"""
         super(Sticker, self).__init__(*args, **kwargs)
 
+
 class ShareAttachment(Attachment):
-    def __init__(self, **kwargs):
-        """Represents a shared item (eg. URL) that has been sent as a Facebook attachment - *Currently Incomplete!*"""
+    #: ID of the author of the shared post
+    author = None
+    #: Target URL
+    url = None
+    #: Original URL if Facebook redirects the URL
+    original_url = None
+    #: Title of the attachment
+    title = None
+    #: Description of the attachment
+    description = None
+    #: Name of the source
+    source = None
+    #: URL of the attachment image
+    image_url = None
+    #: URL of the original image if Facebook uses `safe_image`
+    original_image_url = None
+    #: Width of the image
+    image_width = None
+    #: Height of the image
+    image_height = None
+    #: List of additional attachments
+    attachments = None
+
+    def __init__(
+        self,
+        author=None,
+        url=None,
+        original_url=None,
+        title=None,
+        description=None,
+        source=None,
+        image_url=None,
+        original_image_url=None,
+        image_width=None,
+        image_height=None,
+        attachments=None,
+        **kwargs
+    ):
+        """Represents a shared item (eg. URL) that has been sent as a Facebook attachment"""
         super(ShareAttachment, self).__init__(**kwargs)
+        self.author = author
+        self.url = url
+        self.original_url = original_url
+        self.title = title
+        self.description = description
+        self.source = source
+        self.image_url = image_url
+        self.original_image_url = original_image_url
+        self.image_width = image_width
+        self.image_height = image_height
+        if attachments is None:
+            attachments = []
+        self.attachments = attachments
+
+
+class LocationAttachment(Attachment):
+    #: Latidute of the location
+    latitude = None
+    #: Longitude of the location
+    longitude = None
+    #: URL of image showing the map of the location
+    image_url = None
+    #: Width of the image
+    image_width = None
+    #: Height of the image
+    image_height = None
+    #: URL to Bing maps with the location
+    url = None
+
+    def __init__(self, latitude=None, longitude=None, **kwargs):
+        """Represents a user location"""
+        super(LocationAttachment, self).__init__(**kwargs)
+        self.latitude = latitude
+        self.longitude = longitude
+
+
+class LiveLocationAttachment(LocationAttachment):
+    #: Name of the location
+    name = None
+    #: Timestamp when live location expires
+    expiration_time = None
+    #: True if live location is expired
+    is_expired = None
+
+    def __init__(self, name=None, expiration_time=None, is_expired=None, **kwargs):
+        """Represents a live user location"""
+        super(LiveLocationAttachment, self).__init__(**kwargs)
+        self.expiration_time = expiration_time
+        self.is_expired = is_expired
+
 
 class FileAttachment(Attachment):
     #: Url where you can download the file
@@ -273,6 +497,7 @@ class FileAttachment(Attachment):
         self.name = name
         self.is_malicious = is_malicious
 
+
 class AudioAttachment(Attachment):
     #: Name of the file
     filename = None
@@ -283,13 +508,16 @@ class AudioAttachment(Attachment):
     #: Audio type
     audio_type = None
 
-    def __init__(self, filename=None, url=None, duration=None, audio_type=None, **kwargs):
+    def __init__(
+        self, filename=None, url=None, duration=None, audio_type=None, **kwargs
+    ):
         """Represents an audio file that has been sent as a Facebook attachment"""
         super(AudioAttachment, self).__init__(**kwargs)
         self.filename = filename
         self.url = url
         self.duration = duration
         self.audio_type = audio_type
+
 
 class ImageAttachment(Attachment):
     #: The extension of the original image (eg. 'png')
@@ -326,7 +554,18 @@ class ImageAttachment(Attachment):
     #: Height of the animated preview image
     animated_preview_height = None
 
-    def __init__(self, original_extension=None, width=None, height=None, is_animated=None, thumbnail_url=None, preview=None, large_preview=None, animated_preview=None, **kwargs):
+    def __init__(
+        self,
+        original_extension=None,
+        width=None,
+        height=None,
+        is_animated=None,
+        thumbnail_url=None,
+        preview=None,
+        large_preview=None,
+        animated_preview=None,
+        **kwargs
+    ):
         """
         Represents an image that has been sent as a Facebook attachment
         To retrieve the full image url, use: :func:`fbchat.Client.fetchImageUrl`,
@@ -345,21 +584,22 @@ class ImageAttachment(Attachment):
 
         if preview is None:
             preview = {}
-        self.preview_url = preview.get('uri')
-        self.preview_width = preview.get('width')
-        self.preview_height = preview.get('height')
+        self.preview_url = preview.get("uri")
+        self.preview_width = preview.get("width")
+        self.preview_height = preview.get("height")
 
         if large_preview is None:
             large_preview = {}
-        self.large_preview_url = large_preview.get('uri')
-        self.large_preview_width = large_preview.get('width')
-        self.large_preview_height = large_preview.get('height')
+        self.large_preview_url = large_preview.get("uri")
+        self.large_preview_width = large_preview.get("width")
+        self.large_preview_height = large_preview.get("height")
 
         if animated_preview is None:
             animated_preview = {}
-        self.animated_preview_url = animated_preview.get('uri')
-        self.animated_preview_width = animated_preview.get('width')
-        self.animated_preview_height = animated_preview.get('height')
+        self.animated_preview_url = animated_preview.get("uri")
+        self.animated_preview_width = animated_preview.get("width")
+        self.animated_preview_height = animated_preview.get("height")
+
 
 class VideoAttachment(Attachment):
     #: Size of the original video in bytes
@@ -394,7 +634,18 @@ class VideoAttachment(Attachment):
     #: Height of the large preview image
     large_image_height = None
 
-    def __init__(self, size=None, width=None, height=None, duration=None, preview_url=None, small_image=None, medium_image=None, large_image=None, **kwargs):
+    def __init__(
+        self,
+        size=None,
+        width=None,
+        height=None,
+        duration=None,
+        preview_url=None,
+        small_image=None,
+        medium_image=None,
+        large_image=None,
+        **kwargs
+    ):
         """Represents a video that has been sent as a Facebook attachment"""
         super(VideoAttachment, self).__init__(**kwargs)
         self.size = size
@@ -405,21 +656,21 @@ class VideoAttachment(Attachment):
 
         if small_image is None:
             small_image = {}
-        self.small_image_url = small_image.get('uri')
-        self.small_image_width = small_image.get('width')
-        self.small_image_height = small_image.get('height')
+        self.small_image_url = small_image.get("uri")
+        self.small_image_width = small_image.get("width")
+        self.small_image_height = small_image.get("height")
 
         if medium_image is None:
             medium_image = {}
-        self.medium_image_url = medium_image.get('uri')
-        self.medium_image_width = medium_image.get('width')
-        self.medium_image_height = medium_image.get('height')
+        self.medium_image_url = medium_image.get("uri")
+        self.medium_image_width = medium_image.get("width")
+        self.medium_image_height = medium_image.get("height")
 
         if large_image is None:
             large_image = {}
-        self.large_image_url = large_image.get('uri')
-        self.large_image_width = large_image.get('width')
-        self.large_image_height = large_image.get('height')
+        self.large_image_url = large_image.get("uri")
+        self.large_image_width = large_image.get("width")
+        self.large_image_height = large_image.get("height")
 
 
 class Mention(object):
@@ -440,7 +691,82 @@ class Mention(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Mention {}: offset={} length={}>'.format(self.thread_id, self.offset, self.length)
+        return "<Mention {}: offset={} length={}>".format(
+            self.thread_id, self.offset, self.length
+        )
+
+
+class QuickReply(object):
+    #: Payload of the quick reply
+    payload = None
+    #: External payload for responses
+    external_payload = None
+    #: Additional data
+    data = None
+    #: Whether it's a response for a quick reply
+    is_response = None
+
+    def __init__(self, payload=None, data=None, is_response=False):
+        """Represents a quick reply"""
+        self.payload = payload
+        self.data = data
+        self.is_response = is_response
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return "<{}: payload={!r}>".format(self.__class__.__name__, self.payload)
+
+
+class QuickReplyText(QuickReply):
+    #: Title of the quick reply
+    title = None
+    #: URL of the quick reply image (optional)
+    image_url = None
+    #: Type of the quick reply
+    _type = "text"
+
+    def __init__(self, title=None, image_url=None, **kwargs):
+        """Represents a text quick reply"""
+        super(QuickReplyText, self).__init__(**kwargs)
+        self.title = title
+        self.image_url = image_url
+
+
+class QuickReplyLocation(QuickReply):
+    #: Type of the quick reply
+    _type = "location"
+
+    def __init__(self, **kwargs):
+        """Represents a location quick reply (Doesn't work on mobile)"""
+        super(QuickReplyLocation, self).__init__(**kwargs)
+        self.is_response = False
+
+
+class QuickReplyPhoneNumber(QuickReply):
+    #: URL of the quick reply image (optional)
+    image_url = None
+    #: Type of the quick reply
+    _type = "user_phone_number"
+
+    def __init__(self, image_url=None, **kwargs):
+        """Represents a phone number quick reply (Doesn't work on mobile)"""
+        super(QuickReplyPhoneNumber, self).__init__(**kwargs)
+        self.image_url = image_url
+
+
+class QuickReplyEmail(QuickReply):
+    #: URL of the quick reply image (optional)
+    image_url = None
+    #: Type of the quick reply
+    _type = "user_email"
+
+    def __init__(self, image_url=None, **kwargs):
+        """Represents an email quick reply (Doesn't work on mobile)"""
+        super(QuickReplyEmail, self).__init__(**kwargs)
+        self.image_url = image_url
+
 
 class Poll(object):
     #: ID of the poll
@@ -461,7 +787,10 @@ class Poll(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Poll ({}): {} options={}>'.format(self.uid, repr(self.title), self.options)
+        return "<Poll ({}): {} options={}>".format(
+            self.uid, repr(self.title), self.options
+        )
+
 
 class PollOption(object):
     #: ID of the poll option
@@ -484,7 +813,10 @@ class PollOption(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<PollOption ({}): {} voters={}>'.format(self.uid, repr(self.text), self.voters)
+        return "<PollOption ({}): {} voters={}>".format(
+            self.uid, repr(self.text), self.voters
+        )
+
 
 class Plan(object):
     #: ID of the plan
@@ -510,8 +842,8 @@ class Plan(object):
         """Represents a plan"""
         self.time = int(time)
         self.title = title
-        self.location = location or ''
-        self.location_id = location_id or ''
+        self.location = location or ""
+        self.location_id = location_id or ""
         self.author_id = None
         self.going = []
         self.declined = []
@@ -521,63 +853,105 @@ class Plan(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Plan ({}): {} time={}, location={}, location_id={}>'.format(self.uid, repr(self.title), self.time, repr(self.location), repr(self.location_id))
+        return "<Plan ({}): {} time={}, location={}, location_id={}>".format(
+            self.uid,
+            repr(self.title),
+            self.time,
+            repr(self.location),
+            repr(self.location_id),
+        )
 
-class Enum(enum.Enum):
+
+class ActiveStatus(object):
+    #: Whether the user is active now
+    active = None
+    #: Timestamp when the user was last active
+    last_active = None
+    #: Whether the user is playing Messenger game now
+    in_game = None
+
+    def __init__(self, active=None, last_active=None, in_game=None):
+        self.active = active
+        self.last_active = last_active
+        self.in_game = in_game
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return "<ActiveStatus: active={} last_active={} in_game={}>".format(
+            self.active, self.last_active, self.in_game
+        )
+
+
+class Enum(aenum.Enum):
     """Used internally by fbchat to support enumerations"""
+
     def __repr__(self):
         # For documentation:
-        return '{}.{}'.format(type(self).__name__, self.name)
+        return "{}.{}".format(type(self).__name__, self.name)
+
 
 class ThreadType(Enum):
     """Used to specify what type of Facebook thread is being used. See :ref:`intro_threads` for more info"""
+
     USER = 1
     GROUP = 2
     ROOM = 2
     PAGE = 3
 
+
 class ThreadLocation(Enum):
     """Used to specify where a thread is located (inbox, pending, archived, other)."""
-    INBOX = 'INBOX'
-    PENDING = 'PENDING'
-    ARCHIVED = 'ARCHIVED'
-    OTHER = 'OTHER'
+
+    INBOX = "INBOX"
+    PENDING = "PENDING"
+    ARCHIVED = "ARCHIVED"
+    OTHER = "OTHER"
+
 
 class TypingStatus(Enum):
     """Used to specify whether the user is typing or has stopped typing"""
+
     STOPPED = 0
     TYPING = 1
 
+
 class EmojiSize(Enum):
     """Used to specify the size of a sent emoji"""
-    LARGE = '369239383222810'
-    MEDIUM = '369239343222814'
-    SMALL = '369239263222822'
+
+    LARGE = "369239383222810"
+    MEDIUM = "369239343222814"
+    SMALL = "369239263222822"
+
 
 class ThreadColor(Enum):
     """Used to specify a thread colors"""
-    MESSENGER_BLUE = '#0084ff'
-    VIKING = '#44bec7'
-    GOLDEN_POPPY = '#ffc300'
-    RADICAL_RED = '#fa3c4c'
-    SHOCKING = '#d696bb'
-    PICTON_BLUE = '#6699cc'
-    FREE_SPEECH_GREEN = '#13cf13'
-    PUMPKIN = '#ff7e29'
-    LIGHT_CORAL = '#e68585'
-    MEDIUM_SLATE_BLUE = '#7646ff'
-    DEEP_SKY_BLUE = '#20cef5'
-    FERN = '#67b868'
-    CAMEO = '#d4a88c'
-    BRILLIANT_ROSE = '#ff5ca1'
-    BILOBA_FLOWER = '#a695c7'
+
+    MESSENGER_BLUE = "#0084ff"
+    VIKING = "#44bec7"
+    GOLDEN_POPPY = "#ffc300"
+    RADICAL_RED = "#fa3c4c"
+    SHOCKING = "#d696bb"
+    PICTON_BLUE = "#6699cc"
+    FREE_SPEECH_GREEN = "#13cf13"
+    PUMPKIN = "#ff7e29"
+    LIGHT_CORAL = "#e68585"
+    MEDIUM_SLATE_BLUE = "#7646ff"
+    DEEP_SKY_BLUE = "#20cef5"
+    FERN = "#67b868"
+    CAMEO = "#d4a88c"
+    BRILLIANT_ROSE = "#ff5ca1"
+    BILOBA_FLOWER = "#a695c7"
+
 
 class MessageReaction(Enum):
     """Used to specify a message reaction"""
-    LOVE = '😍'
-    SMILE = '😆'
-    WOW = '😮'
-    SAD = '😢'
-    ANGRY = '😠'
-    YES = '👍'
-    NO = '👎'
+
+    LOVE = "😍"
+    SMILE = "😆"
+    WOW = "😮"
+    SAD = "😢"
+    ANGRY = "😠"
+    YES = "👍"
+    NO = "👎"

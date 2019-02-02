@@ -17,15 +17,21 @@ def user(client2):
 
 @pytest.fixture(scope="session")
 def group(pytestconfig):
-    return {"id": load_variable("group_id", pytestconfig.cache), "type": ThreadType.GROUP}
+    return {
+        "id": load_variable("group_id", pytestconfig.cache),
+        "type": ThreadType.GROUP,
+    }
 
 
-@pytest.fixture(scope="session", params=["user", "group", pytest.mark.xfail("none")])
+@pytest.fixture(
+    scope="session",
+    params=["user", "group", pytest.param("none", marks=[pytest.mark.xfail()])],
+)
 def thread(request, user, group):
     return {
         "user": user,
         "group": group,
-        "none": {"id": "0", "type": ThreadType.GROUP}
+        "none": {"id": "0", "type": ThreadType.GROUP},
     }[request.param]
 
 
@@ -109,14 +115,14 @@ def compare(client, thread):
 def message_with_mentions(request, client, client2, group):
     text = "Hi there ["
     mentions = []
-    if 'me' in request.param:
+    if "me" in request.param:
         mentions.append(Mention(thread_id=client.uid, offset=len(text), length=2))
         text += "me, "
-    if 'other' in request.param:
+    if "other" in request.param:
         mentions.append(Mention(thread_id=client2.uid, offset=len(text), length=5))
         text += "other, "
     # Unused, because Facebook don't properly support sending mentions with groups as targets
-    if 'group' in request.param:
+    if "group" in request.param:
         mentions.append(Mention(thread_id=group["id"], offset=len(text), length=5))
         text += "group, "
     text += "nothing]"
