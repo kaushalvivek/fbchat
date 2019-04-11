@@ -5,6 +5,7 @@ python: 3.6
 cache: pip
 
 before_install: pip install flit
+# Use `--deps production` so that we don't install unnecessary dependencies
 install: flit install --deps production --extras test
 script: pytest -m offline
 
@@ -39,7 +40,7 @@ jobs:
       file_glob: true
       file: dist/*
       skip_cleanup: true
-      draft: true
+      draft: false
       on:
         tags: true
 
@@ -53,3 +54,8 @@ jobs:
       script: flit publish
       on:
         tags: true
+
+notifications:
+  email:
+    on_success: never
+    on_failure: change
